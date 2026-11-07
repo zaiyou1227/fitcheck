@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f6f4a">
+<title>批量比对 · 大码尺码助手</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="css/app.css">
+<style>
+  .tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+  .tabs button{
+    flex:1 1 0;min-width:120px;min-height:44px;padding:8px 10px;
+    border:1px solid var(--line);background:#fdfdfb;border-radius:11px;
+    font-size:13px;font-family:inherit;color:var(--sub);cursor:pointer;
+  }
+  .tabs button[aria-selected="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .pane{display:none}
+  .pane.on{display:block}
+  textarea.big{
+    width:100%;min-height:170px;padding:12px;border:1px solid var(--line);
+    border-radius:11px;background:#fdfdfb;font-family:var(--mono);font-size:12.5px;
+    line-height:1.6;color:var(--ink);resize:vertical;
+  }
+  .result{border:1px solid var(--line);border-radius:13px;padding:14px;margin-bottom:12px;background:#fff}
+  .result.best{border-color:var(--brand-line);box-shadow:inset 0 0 0 1px var(--brand-line)}
+  .result h3{font-size:14.5px;margin-bottom:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .badge{font-size:11px;border-radius:999px;padding:2px 9px;border:1px solid}
+  .badge.good{color:var(--brand);border-color:var(--brand-line);background:var(--brand-bg)}
+  .badge.mid{color:var(--mid);border-color:var(--mid-line);background:var(--mid-bg)}
+  .badge.bad{color:var(--warn);border-color:var(--warn-line);background:var(--warn-bg)}
+  .badge.plain{color:var(--sub);border-color:var(--line);background:var(--bg)}
+  .meta{font-size:11.5px;color:var(--faint);font-family:var(--mono);margin-bottom:8px;word-break:break-all}
+  .fits{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+  .fit{border:1px solid var(--line);border-radius:9px;padding:6px 10px;font-size:12px;background:#fdfdfb}
+  .fit b{font-family:var(--mono);font-size:13px}
+  .fit.best-fit{border-color:var(--brand);background:var(--brand-bg)}
+  .fit.can-fit{border-color:var(--brand-line)}
+  .fit.no-fit{opacity:.45;text-decoration:line-through}
+  .detail{display:none;margin-top:10px;border-top:1px dashed var(--line);padding-top:10px}
+  .detail.on{display:block}
+  .drow{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;
+    padding:4px 0;border-bottom:1px solid var(--line-soft)}
+  .drow:last-child{border-bottom:0}
+  .drow .l{color:var(--sub)}
+  .drow .r{font-family:var(--mono);white-space:nowrap}
+  .okv{color:var(--brand)}
+  .badv{color:var(--warn)}
+  .bigv{color:var(--mid)}
+  .empty{color:var(--sub);font-size:13px;padding:18px 0;text-align:center}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <h1>批量比对</h1>
+    <p class="lede">一次处理多个商品：解析尺寸表 → 和你的身体数据比对 → 按"能不能穿"排序。
+      淘宝/京东有登录墙无法自动抓取，用<b>粘贴尺寸表</b>最稳；无登录墙的品牌官网可以试<b>链接</b>。</p>
+  </div>
+
+  <div class="cols">
+
+    <div>
+      <div class="card">
+        <h2>① 数据从哪来 <span class="tag">三种方式，任选</span></h2>
+
+        <div class="tabs" role="tablist">
+          <button role="tab" aria-selected="true" data-tab="links">粘贴链接</button>
+          <button role="tab" aria-selected="false" data-tab="html">粘贴尺寸表</button>
+          <button role="tab" aria-selected="false" data-tab="bookmark">一键采集</button>
+        </div>
+
+        <!-- 链接 -->
+        <div class="pane on" id="pane-links">
+          <p class="hint">一行一个链接。工具会尝试抓取；<b>被登录墙拦住的会标出来</b>，那时改用「粘贴尺寸表」。</p>
+          <textarea class="big" id="linkInput" placeholder="https://www.uniqlo.cn/product/...&#10;https://www.decathlon.com.cn/..."></textarea>
+          <div class="toolbar">
+            <button class="btn" id="fetchBtn">抓取并比对</button>
+            <button class="btn ghost" id="clearLinks">清空</button>
+          </div>
+          <div class="note-box mid" style="margin-top:12px">
+            <b>为什么淘宝/京东抓不到：</b>它们对非登录访问返回登录页，且页面内容由 JS 动态渲染。
+            实测确认连真实浏览器都会跳登录。这不是工具的问题，是平台限制。
+          </div>
+        </div>
+
+        <!-- HTML/文本 -->
+        <div class="pane" id="pane-html">
+          <p class="hint">把商品详情页的<b>尺寸表整段复制</b>黏进来（Ctrl+A 全选页面也行），或者直接手打。
+            多个商品之间用一行 <code>---</code> 分隔。</p>
+          <textarea class="big" id="htmlInput" placeholder="尺码	裤长	腰围	臀围	大腿围	后裆&#10;3XL	102	116	126	72	36&#10;4XL	104	124	134	78	38&#10;---&#10;尺码	胸围	肩宽	衣长&#10;XL	116	48	72"></textarea>
+          <div class="toolbar">
+            <button class="btn brand" id="parseBtn">解析并比对</button>
+            <button class="btn ghost" id="clearHtml">清空</button>
+          </div>
+        </div>
+
+        <!-- 书签 -->
+        <div class="pane" id="pane-bookmark">
+          <p class="hint">在商品页点一下书签，自动提取尺寸表并带回这里。<b>这种方式能绕过登录墙</b>——
+            因为用的是你自己已登录的浏览器。</p>
+          <div id="bmHost"></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <h2>② 你的尺码 <span class="tag">来自身体档案</span></h2>
+        <div id="bodySummary"></div>
+        <div class="toolbar">
+          <a class="btn ghost small" href="profile.html">去补录</a>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <h2>③ 面料 <span class="tag">影响松量判断</span></h2>
+        <div class="seg" id="fabricSeg" role="group" aria-label="面料弹性">
+          <button data-v="none" aria-pressed="true">无弹<small>牛仔/西裤</small></button>
+          <button data-v="some" aria-pressed="false">微弹<small>含氨纶</small></button>
+          <button data-v="high" aria-pressed="false">高弹<small>打底/运动</small></button>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <h2>④ 比对结果 <span class="tag" id="countTag">还没开始</span></h2>
+        <p class="hint" id="resHint">粘完数据点「解析并比对」，结果会按能不能穿自动排序。</p>
+        <div id="results"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-note">
+    <b>怎么读这个结果</b>
+    <ol>
+      <li><b>很合适</b>：各项松量都落在合理区间，可以直接买。</li>
+      <li><b>可以穿</b>：有一两项偏紧或偏松，能穿但不算完美。</li>
+      <li><b>偏大 / 偏紧</b>：号不对，换小一码或大一码。</li>
+      <li><b>穿不下</b>：腿部或胸围这类硬指标不够，别买——会标出差多少厘米。</li>
+    </ol>
+    <p style="margin-top:8px">
+      解析出来的是<b>页面上的文字</b>，机器识别可能出错。下单前请对着商品页核一眼数字。
+    </p>
+  </div>
+
+</div>
+
+<script src="js/vendor-lz-string.min.js"></script>
+<script src="js/data.js"></script>
+<script src="js/sizeparse.js"></script>
+<script src="js/app.js"></script>
+<script>
+(function () {
+  "use strict";
+  var D = DachuData;
+  var SP = SizeParse;
+  var UIx = UI;
+
+  var products = [];   // { title, url, parsed, category, raw }
+
+  // ---------- 身体数据 ----------
+  function bodyCm() {
+    return {
+      waist: D.getCm("waist"), belly: D.getCm("belly"), hip: D.getCm("hip"),
+      thigh: D.getCm("thigh"), knee: D.getCm("knee"), rise: D.getCm("rise"),
+      chest: D.getCm("chest"), shoulder: D.getCm("shoulder"),
+      neck: D.getCm("neck"), armLen: D.getCm("armLen"),
+      outseam: D.getCm("outseam"), inseam: D.getCm("inseam")
+    };
+  }
+
+  function bodyReady() {
+    var b = bodyCm();
+    return b.waist !== null || b.belly !== null || b.chest !== null;
+  }
+
+  function renderBody() {
+    var host = document.getElementById("bodySummary");
+    var b = bodyCm();
+    var keys = [
+      ["belly", "腹围"], ["hip", "臀围"], ["thigh", "大腿围"], ["rise", "立裆深"],
+      ["chest", "胸围"], ["shoulder", "肩宽"]
+    ];
+    var rows = keys.filter(function (k) { return b[k[0]] !== null; })
+      .map(function (k) {
+        return '<div class="drow"><span class="l">' + k[1] + '</span>' +
+               '<span class="r">' + D.fmt(b[k[0]]) + ' cm</span></div>';
+      });
+    if (!rows.length) {
+      host.innerHTML = '<div class="note-box warn">还没录身体数据，无法比对。' +
+        '至少需要腹围（或腰围）、臀围、大腿围、立裆深。<b>普通身材也得录</b>，' +
+        '这个工具不是只给大码用的。</div>';
+    } else {
+      host.innerHTML = rows.join("") +
+        '<p class="hint" style="margin-top:8px;margin-bottom:0">缺哪项，对应指标就不参与判断。' +
+        '换单位去「尺码档案」。</p>';
+    }
+  }
+
+  // ---------- 面料 ----------
+  function fabric() { return D.getPref("fabric") || "none"; }
+  function syncFabric() {
+    var cur = fabric();
+    document.querySelectorAll("#fabricSeg button").forEach(function (b) {
+      b.setAttribute("aria-pressed", b.dataset.v === cur ? "true" : "false");
+    });
+  }
+  document.getElementById("fabricSeg").addEventListener("click", function (ev) {
+    var b = ev.target.closest("button");
+    if (!b) return;
+    D.setPref("fabric", b.dataset.v);
+    syncFabric();
+    render();
+  });
+
+  // ---------- 标签页 ----------
+  document.querySelector(".tabs").addEventListener("click", function (ev) {
+    var b = ev.target.closest("button[data-tab]");
+    if (!b) return;
+    this.querySelectorAll("button[data-tab]").forEach(function (x) {
+      x.setAttribute("aria-selected", x === b ? "true" : "false");
+    });
+    document.querySelectorAll(".pane").forEach(function (p) {
+      p.classList.toggle("on", p.id === "pane-" + b.dataset.tab);
+    });
+  });
+
+  // ---------- 添加商品 ----------
+  function addProduct(item) {
+    // 去重：同 URL 或同标题+尺寸表
+    var dup = products.some(function (p) {
+      if (item.url && p.url && p.url === item.url) return true;
+      if (item.raw && p.raw && p.raw === item.raw) return true;
+      return false;
+    });
+    if (dup) return false;
+    products.push(item);
+    return true;
+  }
+
+  // ---------- 解析 ----------
+  function handleChunks(chunks) {
+    var added = 0, failed = 0;
+    chunks.forEach(function (chunk) {
+      var text = String(chunk || "").trim();
+      if (!text) return;
+      var parsed = SP.parse(text);
+      if (!parsed.ok) { failed++; return; }
+
+      // 猜标题：取第一行像"商品名"的文本（排除表头、纯数字行）
+      var firstLine = "未命名商品";
+      var lines = text.split("\n").map(function (l) { return l.trim(); }).filter(Boolean);
+      for (var i = 0; i < lines.length; i++) {
+        var l = lines[i];
+        if (/^[<{[]/.test(l)) continue;                   // 原始 HTML
+        if (/^(尺码|码数|规格|项目|size)/i.test(l)) continue; // 表头
+        if (/^[\d\s.\-—–\t]+$/.test(l)) continue;          // 纯数字行
+        // 数据行：以尺码开头且后面跟着数字，比如 "6XL 106 140 152"
+        if (SP.isSizeLabel(l.split(/[\s\t]/)[0]) && /\d/.test(l)) continue;
+        if (l.replace(/[\d\s.\-—–]/g, "").length < 2) continue; // 几乎没有文字
+        firstLine = l;
+        break;
+      }
+
+      var cat = SP.guessCategory(text) ;
+      if (cat === "unknown") cat = SP.guessCategoryFromFields(parsed.fields);
+
+      if (addProduct({
+        title: firstLine.slice(0, 60),
+        url: "",
+        parsed: parsed,
+        category: cat,
+        raw: text.slice(0, 400)
+      })) added++;
+    });
+    return { added: added, failed: failed };
+  }
+
+  document.getElementById("parseBtn").addEventListener("click", function () {
+    var raw = document.getElementById("htmlInput").value;
+    if (!raw.trim()) { UIx.toast("先粘贴尺寸表"); return; }
+    var chunks = raw.split(/\n\s*---+\s*\n/);
+    var r = handleChunks(chunks);
+    if (r.added === 0 && r.failed > 0) {
+      UIx.toast("没识别出尺寸表，检查一下格式");
+      return;
+    }
+    UIx.toast("已解析 " + r.added + " 个商品" + (r.failed ? "，" + r.failed + " 个失败" : "") +
+      (r.added ? "，看右边结果" : ""));
+    render();
+  });
+
+  // ---------- 链接抓取 ----------
+  // 纯前端能做的只有 fetch；跨域会失败，登录墙会拿到登录页
+  async function fetchOne(url) {
+    try {
+      var res = await fetch(url, { mode: "cors", credentials: "omit" });
+      if (!res.ok) return { ok: false, reason: "HTTP " + res.status };
+      var html = await res.text();
+      var parsed = SP.parse(html);
+      if (!parsed.ok) {
+        var hasLogin = /登录|login|验证码|安全验证/i.test(html);
+        return { ok: false, reason: hasLogin ? "被登录墙拦住" : "页面里没找到尺寸表" };
+      }
+      var title = (html.match(/<title[^>]*>([\s\S]*?)<\/title>/i) || [])[1] || url;
+      return {
+        ok: true,
+        title: title.trim().slice(0, 60),
+        url: url,
+        parsed: parsed,
+        category: SP.guessCategory(title) || SP.guessCategoryFromFields(parsed.fields),
+        raw: url
+      };
+    } catch (e) {
+      return { ok: false, reason: "跨域被拦（浏览器安全限制）" };
+    }
+  }
+
+  document.getElementById("fetchBtn").addEventListener("click", async function () {
+    var urls = document.getElementById("linkInput").value
+      .split(/\n/).map(function (s) { return s.trim(); })
+      .filter(function (s) { return /^https?:\/\//.test(s); });
+
+    if (!urls.length) { UIx.toast("先粘贴至少一个 http 链接"); return; }
+
+    var btn = this;
+    btn.disabled = true;
+    btn.textContent = "抓取中…";
+    var fails = [];
+
+    for (var i = 0; i < urls.length; i++) {
+      var r = await fetchOne(urls[i]);
+      if (r.ok) {
+        addProduct(r);
+      } else {
+        fails.push(urls[i] + " → " + r.reason);
+      }
+    }
+
+    btn.disabled = false;
+    btn.textContent = "抓取并比对";
+
+    if (fails.length) {
+      UIx.toast(fails.length + " 个链接抓不到，改用「粘贴尺寸表」");
+      var box = document.getElementById("resHint");
+      box.innerHTML = "<b>部分链接抓不到：</b><br>" +
+        fails.map(function (f) { return "· " + f; }).join("<br>") +
+        '<br><br>淘宝/京东/抖音有登录墙，这是平台限制。把商品页的尺寸表复制过来即可。';
+    }
+    render();
+  });
+
+  // ---------- 书签采集 ----------
+  // 生成一个 bookmarklet：在商品页运行时提取尺寸表，postMessage 回来
+  function buildBookmarklet() {
+    var code = "javascript:(function(){" +
+      "var t=document.body?document.body.innerText:'';" +
+      "var w=window.open('" + location.href.replace(/[^/]*$/, "") + "compare.html','_blank');" +
+      "setTimeout(function(){" +
+      "try{w.postMessage({type:'DACHU_TABLE',title:document.title,text:t,url:location.href},'*');}catch(e){}" +
+      "},800);" +
+      "})();";
+    return code;
+  }
+
+  function mountBookmark() {
+    var host = document.getElementById("bmHost");
+    var href = buildBookmarklet();
+    host.innerHTML =
+      '<p style="font-size:13px;line-height:1.7">' +
+      '把下面这个按钮拖到浏览器书签栏，或者在书签栏新建一个书签，把下面的代码粘进 <b>网址</b> 里：</p>' +
+      '<div class="note-box mid" style="word-break:break-all;font-family:var(--mono);font-size:11px;line-height:1.5">' +
+      escapeHtml(href) + '</div>' +
+      '<div class="toolbar">' +
+        '<button class="btn small" id="copyBm">复制书签代码</button>' +
+        '<button class="btn ghost small" id="tryBm">在当前位置测试</button>' +
+      '</div>' +
+      '<p class="hint" style="margin-top:10px;margin-bottom:0">' +
+      '在商品页点这个书签，会打开本页并把那一页的尺寸表带过来。</p>';
+
+    document.getElementById("copyBm").addEventListener("click", function () {
+      UIx.copyText(href).then(function (ok) {
+        UIx.toast(ok ? "已复制，粘到书签的网址栏里" : "复制失败，请手动选中");
+      });
+    });
+    document.getElementById("tryBm").addEventListener("click", function () {
+      // 本地测试：模拟一条 postMessage
+      window.postMessage({
+        type: "DACHU_TABLE",
+        title: "（测试）某品牌长裤",
+        text: "尺码\t裤长\t腰围\t臀围\t大腿围\t后裆\n3XL\t102\t116\t126\t72\t36\n4XL\t104\t124\t134\t78\t38\n5XL\t106\t132\t142\t84\t40",
+        url: location.href
+      }, "*");
+    });
+  }
+
+  window.addEventListener("message", function (ev) {
+    var d = ev.data;
+    if (!d || d.type !== "DACHU_TABLE" || !d.text) return;
+    var parsed = SP.parse(d.text);
+    if (!parsed.ok) { UIx.toast("那一页没找到尺寸表"); return; }
+    addProduct({
+      title: (d.title || "未命名商品").slice(0, 60),
+      url: d.url || "",
+      parsed: parsed,
+      category: SP.guessCategory(d.title + " " + d.text) ,
+      raw: d.text.slice(0, 400)
+    });
+    UIx.toast("已采集：" + (d.title || "商品"));
+    render();
+  });
+
+  function escapeHtml(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+
+  // ---------- 渲染结果 ----------
+  function badgeClass(label) {
+    if (label === "很合适") return "good";
+    if (label === "可以穿") return "mid";
+    if (label === "穿不下") return "bad";
+    return "plain";
+  }
+
+  function render() {
+    var host = document.getElementById("results");
+    var tag = document.getElementById("countTag");
+
+    if (!products.length) {
+      host.innerHTML = '<div class="empty">还没有商品。左边粘数据试试。</div>';
+      tag.textContent = "还没开始";
+      return;
+    }
+
+    var body = bodyCm();
+    if (!bodyReady()) {
+      host.innerHTML = '<div class="note-box warn">先去「尺码档案」录身体数据，' +
+        '否则没法比对。<a href="profile.html">现在去</a></div>';
+      tag.textContent = products.length + " 个商品";
+      return;
+    }
+
+    renderBody();
+    var ranked = SP.rank(products, body, { fabric: fabric() });
+    var okCount = ranked.filter(function (r) { return r.fitOk; }).length;
+    tag.textContent = ranked.length + " 个商品 · " + okCount + " 个能穿";
+
+    host.innerHTML = "";
+    ranked.forEach(function (item, idx) {
+      var p = item.product;
+      var m = item.match;
+      var best = m.best;
+
+      var div = document.createElement("div");
+      div.className = "result" + (idx === 0 && item.fitOk ? " best" : "");
+
+      var fitsHtml = m.all.slice(0, 6).map(function (s) {
+        var cls = "fit";
+        // 只有真的穿不下的才灰掉；最佳可穿项要高亮
+        if (s.label === "穿不下") cls += " no-fit";
+        else if (s.size === best.size && item.fitOk) cls += " best-fit";
+        else if (s.label === "很合适" || s.label === "可以穿") cls += " can-fit";
+        return '<span class="' + cls + '">' + escapeHtml(s.size) +
+          " <b>" + Math.round(s.score * 100) + "</b></span>";
+      }).join("");
+
+      var detailRows = "";
+      if (best) {
+        detailRows = best.details.map(function (d) {
+          var cls = d.verdict === "ok" ? "okv" : (d.verdict === "too-small" ? "badv" : "bigv");
+          var sign = d.ease >= 0 ? "+" : "";
+          return '<div class="drow"><span class="l">' + d.name + "</span>" +
+            '<span class="r"><span class="' + cls + '">' + D.fmt(d.garment) + "cm</span>" +
+            " （" + sign + D.fmt(d.ease) + "）</span></div>";
+        }).join("");
+      }
+
+      div.innerHTML =
+        '<h3>' + escapeHtml(p.title || "未命名商品") +
+          '<span class="badge ' + badgeClass(m.verdict) + '">' + m.verdict + "</span>" +
+          '<span class="badge plain">' + catName(m.category) + "</span>" +
+        "</h3>" +
+        '<div class="meta">' + (p.url ? escapeHtml(p.url) : "本地解析") +
+          " · 识别 " + p.parsed.rows.length + " 个尺码" +
+          " · 置信度 " + Math.round((p.parsed.confidence || 0) * 100) + "%</div>" +
+        (best ? '<div style="font-size:13px">建议 <b>' + escapeHtml(best.size) + "</b>" +
+          (best.hardFail ? '　<span class="badv">' + escapeHtml(best.hardFail) + "</span>" : "") +
+          (best.tooBig ? '　<span class="bigv">' + escapeHtml(best.tooBig) + "</span>" : "") +
+          "</div>" : "") +
+        '<div class="fits">' + fitsHtml + "</div>" +
+        (detailRows ? '<div class="detail" id="d' + idx + '">' + detailRows + "</div>" +
+          '<button class="btn ghost small" data-toggle="d' + idx + '">看每项差多少</button>' : "");
+
+      host.appendChild(div);
+    });
+
+    host.querySelectorAll("[data-toggle]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var el = document.getElementById(btn.dataset.toggle);
+        if (!el) return;
+        el.classList.toggle("on");
+        btn.textContent = el.classList.contains("on") ? "收起" : "看每项差多少";
+      });
+    });
+  }
+
+  function catName(c) {
+    return c === "pants" ? "裤子" : c === "top" ? "上衣" : c === "coat" ? "外套" : "品类未知";
+  }
+
+  // ---------- 清空 ----------
+  document.getElementById("clearLinks").addEventListener("click", function () {
+    document.getElementById("linkInput").value = "";
+  });
+  document.getElementById("clearHtml").addEventListener("click", function () {
+    document.getElementById("htmlInput").value = "";
+  });
+
+  // ---------- 启动 ----------
+  UIx.boot();
+  syncFabric();
+  renderBody();
+  mountBookmark();
+  render();
+
+  window.addEventListener("focus", function () {
+    renderBody();
+    render();
+  });
+
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("sw.js").catch(function () {});
+    });
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-﻿/* ===========================================================
+/* ===========================================================
    集成测试：用 jsdom 加载真实页面（经本地 HTTP 服务），模拟用户操作
    覆盖：数据层换算、单位切换、推算、分享链接、筛店持久化、静态资源
    用法：node tests/run-tests.cjs
@@ -40,8 +40,9 @@ function check(label, cond, extra) {
   else { fails++; console.log("FAIL  " + label + (extra ? "  -> " + extra : "")); }
 }
 
-function makeStorage() {
+function makeStorage(seed) {
   const map = new Map();
+  if (seed) map.set("dachu.v1", JSON.stringify(seed));
   return {
     getItem: k => (map.has(k) ? map.get(k) : null),
     setItem: (k, v) => { map.set(String(k), String(v)); },
@@ -337,8 +338,9 @@ async function main() {
   console.log("\n=== 6. 静态资源与 PWA ===");
   {
     const must = [
-      "index.html", "profile.html", "pants.html", "guide.html", "share.html",
-      "css/app.css", "js/data.js", "js/app.js", "js/vendor-lz-string.min.js",
+      "index.html", "profile.html", "pants.html", "compare.html", "guide.html", "share.html",
+      "css/app.css", "js/data.js", "js/sizeparse.js", "js/app.js",
+      "js/vendor-lz-string.min.js",
       "manifest.webmanifest", "sw.js",
       "icons/icon.svg", "icons/icon-192.png", "icons/icon-512.png",
       "icons/apple-touch-icon.png"
@@ -352,11 +354,12 @@ async function main() {
     check("manifest display standalone", manifest.display === "standalone");
 
     const sw = fs.readFileSync(path.join(PUB, "sw.js"), "utf8");
-    check("sw 缓存了 5 个页面",
-      ["index.html", "profile.html", "pants.html", "guide.html", "share.html"]
+    check("sw 缓存了 6 个页面",
+      ["index.html", "profile.html", "pants.html", "compare.html", "guide.html", "share.html"]
         .every(f => sw.includes(f)));
+    check("sw 缓存了解析引擎", sw.includes("sizeparse.js"));
 
-    ["index.html", "profile.html", "pants.html", "guide.html"].forEach(f => {
+    ["index.html", "profile.html", "pants.html", "compare.html", "guide.html"].forEach(f => {
       const s = fs.readFileSync(path.join(PUB, f), "utf8");
       check(f + " 引用 app.css", s.includes("css/app.css"));
       check(f + " 引用 data.js", s.includes("js/data.js"));
@@ -364,6 +367,9 @@ async function main() {
       check(f + " 声明 viewport", s.includes('name="viewport"'));
       check(f + " 有主题色", s.includes('name="theme-color"'));
     });
+
+    check("compare.html 引用解析引擎",
+      fs.readFileSync(path.join(PUB, "compare.html"), "utf8").includes("js/sizeparse.js"));
 
     ["index.html", "profile.html", "pants.html", "guide.html", "share.html"].forEach(f => {
       const s = fs.readFileSync(path.join(PUB, f), "utf8");
@@ -381,6 +387,41 @@ async function main() {
     const i512 = size("icons/icon-512.png");
     check("icon-192 尺寸正确", i192.w === 192 && i192.h === 192, JSON.stringify(i192));
     check("icon-512 尺寸正确", i512.w === 512 && i512.h === 512, JSON.stringify(i512));
+  }
+
+  // ============================================================
+  console.log("\n=== 7. 批量比对页 compare.html ===");
+  {
+    const store = makeStorage({
+      schema: 1, units: { len: "cm", wt: "kg" }, prefs: { fabric: "none" },
+      items: {
+        waist: { v: 125, u: "cm" }, belly: { v: 138, u: "cm" },
+        hip: { v: 148, u: "cm" }, thigh: { v: 85, u: "cm" }, rise: { v: 32, u: "cm" }
+      },
+      guide: {}
+    });
+    const { window, document, errors } = await loadPage(BASE, "compare.html", store);
+    check("无脚本错误", errors.length === 0, errors.join("; "));
+    check("引擎已加载", !!window.SizeParse);
+    check("五个导航项", document.querySelectorAll(".nav a").length === 5,
+      String(document.querySelectorAll(".nav a").length));
+    check("三个输入页签", document.querySelectorAll(".tabs button[data-tab]").length === 3);
+
+    document.getElementById("htmlInput").value =
+      "尺码\t裤长\t腰围\t臀围\t大腿围\t后裆\n" +
+      "3XL\t100\t116\t126\t72\t36\n" +
+      "4XL\t102\t124\t134\t78\t38\n" +
+      "5XL\t104\t132\t142\t84\t40\n" +
+      "6XL\t106\t140\t152\t92\t44";
+    document.querySelector("#parseBtn").click();
+    await sleep(150);
+
+    check("生成结果卡片", document.querySelectorAll(".result").length === 1,
+      String(document.querySelectorAll(".result").length));
+    const txt = document.getElementById("results").textContent;
+    check("给出可穿结论", /很合适|可以穿/.test(txt), txt.slice(0, 80));
+    check("结果里出现建议尺码", /建议/.test(txt), txt.slice(0, 80));
+    check("有明细展开按钮", !!document.querySelector("[data-toggle]"));
   }
 
   console.log("\n" + (fails === 0

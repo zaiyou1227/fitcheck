@@ -10,8 +10,9 @@
   // ---------- 导航 ----------
   var NAV = [
     { href: "index.html",   label: "首页", icon: "home" },
-    { href: "profile.html", label: "尺码档案", icon: "ruler" },
+    { href: "profile.html", label: "尺码", icon: "ruler" },
     { href: "pants.html",   label: "裤子", icon: "pants" },
+    { href: "compare.html", label: "比价", icon: "compare" },
     { href: "guide.html",   label: "筛店", icon: "shop" }
   ];
 
@@ -19,6 +20,7 @@
     home: '<path d="M3.2 10.4 12 3.4l8.8 7v9.2a1 1 0 0 1-1 1h-5.2v-6.1H9.4v6.1H4.2a1 1 0 0 1-1-1z"/>',
     ruler: '<path d="M3.6 14.8 14.8 3.6l5.6 5.6L9.2 20.4z"/><path d="M7.2 11.2l1.7 1.7M10 8.4l1.7 1.7M12.8 5.6l1.7 1.7"/>',
     pants: '<path d="M8.2 3.2h7.6l1.1 17.6h-3.5l-1.4-10.6-1.4 10.6H7.1z"/><path d="M8.2 3.2v2.2h7.6V3.2"/>',
+    compare: '<path d="M4 19.2V9.6M9.4 19.2V4.8M14.8 19.2v-6.4M20.2 19.2V7.2"/><path d="M2.4 19.2h19.2"/>',
     shop: '<path d="M4 9.4h16l-1 11.4H5z"/><path d="M8.4 9.4V6.6a3.6 3.6 0 0 1 7.2 0v2.8"/>'
   };
 

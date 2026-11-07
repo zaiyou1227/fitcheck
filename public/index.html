@@ -38,8 +38,14 @@
       <span class="go">去换算 →</span>
     </a>
 
+    <a class="tile" href="compare.html">
+      <h2>③ 批量比对 <span class="state" id="stCompare">还没有商品</span></h2>
+      <p>一次粘多个商品尺寸表，自动解析、和你的数据比对、按能不能穿排序。不是大码也能用。</p>
+      <span class="go">去比对 →</span>
+    </a>
+
     <a class="tile" href="guide.html">
-      <h2>③ 筛店清单 <span class="state" id="stGuide">未开始</span></h2>
+      <h2>④ 筛店清单 <span class="state" id="stGuide">未开始</span></h2>
       <p>9 条标准判断一家店值不值得长期买；外加海淘真实成本计算器。</p>
       <span class="go">去筛选 →</span>
     </a>
@@ -99,6 +105,9 @@
 
     var pantsNeed = ["belly", "thigh", "rise"].filter(function (k) { return D.has(k); }).length;
     setState(document.getElementById("stPants"), pantsNeed > 0, "可算 " + pantsNeed + "/3 项", "还没录");
+
+    var n2 = Object.keys(d.items).length;
+    setState(document.getElementById("stCompare"), n2 > 0, n2 + " 项可用", "还没有商品");
 
     var g = Object.keys(d.guide || {}).length;
     setState(document.getElementById("stGuide"), g > 0, "已勾 " + g + " 条", "未开始");

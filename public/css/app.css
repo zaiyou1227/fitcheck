@@ -319,7 +319,7 @@ textarea.cardtext{
   left:0;right:0;bottom:0;
   z-index:50;
   display:grid;
-  grid-template-columns:repeat(4,1fr);
+  grid-template-columns:repeat(5,1fr);
   background:rgba(255,255,255,.94);
   backdrop-filter:blur(10px);
   -webkit-backdrop-filter:blur(10px);
@@ -335,11 +335,11 @@ textarea.cardtext{
   height:var(--nav-h);
   color:var(--sub);
   text-decoration:none;
-  font-size:10.5px;
+  font-size:10px;
   line-height:1.2;
 }
 .nav a svg{
-  width:20px;height:20px;
+  width:19px;height:19px;
   stroke:currentColor;
   fill:none;
   stroke-width:1.7;
@@ -493,6 +493,8 @@ details p{
 }
 .footer-note ol{padding-left:20px;margin:6px 0}
 .footer-note li{margin-bottom:5px}
+.footer-note b{color:var(--ink)}
+.footer-note p{margin:8px 0 0;line-height:1.7}
 
 @media (prefers-reduced-motion: reduce){
   *{transition:none !important;animation:none !important}
