@@ -338,14 +338,36 @@ async function main() {
   console.log("\n=== 6. 静态资源与 PWA ===");
   {
     const must = [
-      "index.html", "profile.html", "pants.html", "compare.html", "guide.html", "share.html",
+      "index.html", "profile.html", "pants.html", "compare.html", "guide.html",
+      "help.html", "share.html",
       "css/app.css", "js/data.js", "js/sizeparse.js", "js/app.js",
       "js/vendor-lz-string.min.js",
       "manifest.webmanifest", "sw.js",
       "icons/icon.svg", "icons/icon-192.png", "icons/icon-512.png",
-      "icons/apple-touch-icon.png"
+      "icons/apple-touch-icon.png",
+      "img/help-home.png", "img/help-profile.png", "img/help-compare.png"
     ];
     must.forEach(f => check("存在 " + f, fs.existsSync(path.join(PUB, f))));
+
+    // 手机使用说明页
+    const helpHtml = fs.readFileSync(path.join(PUB, "help.html"), "utf8");
+    check("说明页含 iPhone 步骤", helpHtml.includes("iPhone"));
+    check("说明页含 Android 步骤", helpHtml.includes("Android"));
+    check("说明页含「添加到主屏幕」", helpHtml.includes("添加到主屏幕"));
+    check("说明页引用 3 张截图", (helpHtml.match(/img\/help-[a-z]+\.png/g) || []).length === 3,
+      String((helpHtml.match(/img\/help-[a-z]+\.png/g) || []).length));
+    check("说明页有站点地址", helpHtml.includes("zaiyou1227.github.io/fitcheck"));
+
+    // 首页要有说明页入口
+    const idxHtml = fs.readFileSync(path.join(PUB, "index.html"), "utf8");
+    check("首页链接到说明页", idxHtml.includes('href="help.html"'));
+
+    // 说明页截图尺寸合理（宽高比接近手机）
+    {
+      const b = fs.readFileSync(path.join(PUB, "img/help-home.png"));
+      const w = b.readUInt32BE(16), h = b.readUInt32BE(20);
+      check("截图是竖版手机比例", w === 780 && h === 1688, w + "x" + h);
+    }
 
     const manifest = JSON.parse(fs.readFileSync(path.join(PUB, "manifest.webmanifest"), "utf8"));
     check("manifest 有 name", !!manifest.name);
@@ -354,10 +376,12 @@ async function main() {
     check("manifest display standalone", manifest.display === "standalone");
 
     const sw = fs.readFileSync(path.join(PUB, "sw.js"), "utf8");
-    check("sw 缓存了 6 个页面",
-      ["index.html", "profile.html", "pants.html", "compare.html", "guide.html", "share.html"]
+    check("sw 缓存了 7 个页面",
+      ["index.html", "profile.html", "pants.html", "compare.html", "guide.html",
+       "help.html", "share.html"]
         .every(f => sw.includes(f)));
     check("sw 缓存了解析引擎", sw.includes("sizeparse.js"));
+    check("sw 缓存了说明页截图", sw.includes("img/help-home.png"));
 
     ["index.html", "profile.html", "pants.html", "compare.html", "guide.html"].forEach(f => {
       const s = fs.readFileSync(path.join(PUB, f), "utf8");

@@ -1,10 +1,10 @@
-﻿/* Service Worker：离线可用
+/* Service Worker：离线可用
    策略：
    - 导航请求（HTML）：网络优先，失败回退缓存 → 保证更新能拿到，断网也不白屏
    - 静态资源（css/js/图标）：缓存优先，后台更新 → 打开快、离线稳
    改版本号即可让老缓存失效。 */
 
-const VERSION = "v1.1.1";
+const VERSION = "v1.2.0";
 const CACHE = "dachu-" + VERSION;
 
 const CORE = [
@@ -14,6 +14,7 @@ const CORE = [
   "./pants.html",
   "./compare.html",
   "./guide.html",
+  "./help.html",
   "./share.html",
   "./css/app.css",
   "./js/data.js",
@@ -24,7 +25,10 @@ const CORE = [
   "./icons/icon.svg",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
-  "./icons/apple-touch-icon.png"
+  "./icons/apple-touch-icon.png",
+  "./img/help-home.png",
+  "./img/help-profile.png",
+  "./img/help-compare.png"
 ];
 
 self.addEventListener("install", function (event) {

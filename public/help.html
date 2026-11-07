@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f6f4a">
+<title>手机怎么用 · 尺码助手</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="css/app.css">
+<style>
+  .steps{counter-reset:s;margin:0;padding:0;list-style:none}
+  .steps > li{
+    counter-increment:s;
+    position:relative;
+    padding:0 0 0 46px;
+    margin-bottom:22px;
+  }
+  .steps > li::before{
+    content:counter(s);
+    position:absolute;left:0;top:-2px;
+    width:32px;height:32px;border-radius:50%;
+    background:var(--brand);color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font-size:15px;font-weight:600;font-family:var(--mono);
+  }
+  .steps > li h3{
+    font-size:15px;margin:0 0 4px;line-height:1.4;
+  }
+  .steps > li p{
+    font-size:13px;color:var(--sub);margin:0 0 8px;line-height:1.65;
+  }
+
+  /* 带标注的手机截图 */
+  .shot{
+    position:relative;
+    display:inline-block;
+    margin:10px 0 4px;
+    border-radius:22px;
+    overflow:hidden;
+    border:6px solid #1b1b19;
+    box-shadow:0 10px 28px rgba(0,0,0,.16);
+    max-width:100%;
+  }
+  .shot img{display:block;width:100%;max-width:320px;height:auto}
+  .shot .anno{
+    position:absolute;
+    display:flex;align-items:center;gap:6px;
+    font-size:11.5px;font-weight:600;
+    color:#fff;background:var(--warn);
+    border-radius:999px;padding:4px 11px;
+    box-shadow:0 3px 10px rgba(0,0,0,.3);
+    white-space:nowrap;
+  }
+  .shot .dot{
+    position:absolute;width:34px;height:34px;
+    border:3px solid var(--warn);border-radius:50%;
+    box-shadow:0 0 0 4px rgba(160,60,20,.22);
+    animation:pulse 1.8s ease-in-out infinite;
+  }
+  @keyframes pulse{
+    0%,100%{transform:scale(1);opacity:.9}
+    50%{transform:scale(1.12);opacity:.55}
+  }
+  @media (prefers-reduced-motion: reduce){ .shot .dot{animation:none} }
+
+  .platform{
+    display:inline-flex;align-items:center;gap:6px;
+    font-size:11px;border-radius:20px;padding:2px 10px;
+    border:1px solid var(--line);background:var(--bg);color:var(--sub);
+  }
+  .platform.ios{color:#1b1b19;border-color:#d6d3ca}
+  .platform.android{color:#1f6f4a;border-color:var(--brand-line);background:var(--brand-bg)}
+
+  /* 底部导航示意 */
+  .menubar{
+    display:flex;gap:10px;flex-wrap:wrap;margin:10px 0;
+  }
+  .menubar .m{
+    flex:1 1 140px;
+    border:1px solid var(--line);border-radius:12px;
+    padding:10px 12px;background:#fdfdfb;
+  }
+  .menubar .m b{display:block;font-size:12.5px;margin-bottom:3px}
+  .menubar .m span{font-size:11.5px;color:var(--sub);line-height:1.5}
+
+  .kbd{
+    display:inline-block;font-family:var(--mono);font-size:12px;
+    background:#efeee9;border-radius:5px;padding:1px 6px;
+    border:1px solid var(--line);
+  }
+
+  .bigurl{
+    display:block;word-break:break-all;
+    background:var(--brand-bg);border:1px solid var(--brand-line);
+    border-radius:10px;padding:12px 14px;
+    font-family:var(--mono);font-size:13.5px;
+    color:var(--brand);margin:10px 0;
+    text-align:center;
+  }
+
+  .faq{border-top:1px solid var(--line);padding-top:6px;margin-top:18px}
+  .faq h3{font-size:13.5px;margin:14px 0 4px}
+  .faq p{font-size:12.5px;color:var(--sub);margin:0;line-height:1.7}
+
+  .two{display:grid;gap:16px}
+  @media(min-width:820px){ .two{grid-template-columns:1fr 1fr} }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <h1>手机怎么用</h1>
+    <p class="lede">不用装 App，也不用改任何设置。本质上就是「用浏览器打开一个网址」，
+      然后把它<b>加到桌面</b>，以后点图标就能用。</p>
+  </div>
+
+  <div class="card">
+    <h2>先打开这个网址 <span class="tag">用手机浏览器</span></h2>
+    <p class="hint" style="margin-bottom:6px">
+      手机连上 Wi-Fi 或流量，打开 Safari / Chrome / 夸克 / 微信内置浏览器都行，输入下面这行：
+    </p>
+    <span class="bigurl" id="siteUrl">zaiyou1227.github.io/fitcheck/</span>
+    <div class="btnrow">
+      <button class="btn brand" id="copyUrl">复制网址</button>
+      <a class="btn ghost" href="index.html">直接打开</a>
+    </div>
+    <p class="hint" style="margin-top:12px;margin-bottom:0">
+      打开后你能看到一个绿色的「尺码助手」首页，底部有五个标签：
+      首页 / 尺码 / 裤子 / 比价 / 筛店。
+    </p>
+  </div>
+
+  <!-- 三步总览 -->
+  <div class="card" style="margin-top:14px">
+    <h2>整体就三步 <span class="tag">先看这个</span></h2>
+    <ol class="steps" style="margin-top:14px">
+      <li>
+        <h3>用手机浏览器打开网址</h3>
+        <p>看到首页就算成功。这一步不需要登录任何账号。</p>
+      </li>
+      <li>
+        <h3>点浏览器菜单里的「添加到主屏幕」</h3>
+        <p>这是唯一容易卡住的地方——按钮藏在菜单里，iPhone 和 Android 位置不一样，下面分开讲。</p>
+      </li>
+      <li>
+        <h3>以后从桌面图标进入</h3>
+        <p>点图标是全屏打开，没有地址栏，和 App 一样。第一次打开过之后，断网也能用。</p>
+      </li>
+    </ol>
+
+    <div class="two">
+      <div>
+        <div style="margin-bottom:6px"><span class="platform ios">iPhone</span></div>
+        <div class="shot">
+          <img src="img/help-home.png" alt="尺码助手手机首页">
+          <span class="anno" style="left:50%;top:10px;transform:translateX(-50%)">
+            打开后应该长这样
+          </span>
+        </div>
+      </div>
+      <div>
+        <p style="font-size:12.5px;color:var(--sub);line-height:1.75;margin-top:8px">
+          <b style="color:var(--ink)">验证成功的方法：</b>底部能看到五个标签，点「尺码」能进去填数字。
+        </p>
+        <p style="font-size:12.5px;color:var(--sub);line-height:1.75">
+          <b style="color:var(--ink)">如果页面是空白的：</b>等 5 秒再刷新一次。第一次打开要下载几百 KB 的文件，
+          网络慢的时候会慢一点。
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- iPhone -->
+  <div class="card" style="margin-top:14px">
+    <h2>iPhone 怎么加到桌面 <span class="tag">Safari 浏览器</span></h2>
+    <p class="hint">必须在 <b>Safari</b> 里操作。微信、QQ 里打开的页面没有这个功能。</p>
+
+    <ol class="steps" style="margin-top:16px">
+      <li>
+        <h3>用 Safari 打开网址</h3>
+        <p>如果是从微信里点的链接，先点右上角「···」→「在浏览器中打开」。</p>
+      </li>
+      <li>
+        <h3>点屏幕底部的「分享」按钮</h3>
+        <p>就是那个<b>方框里一个向上箭头</b>的图标，在 Safari 底部正中间。
+          如果看不到底栏，先轻轻往上滑一下屏幕。</p>
+        <div class="menubar">
+          <div class="m"><b>方框 + 上箭头</b><span>在底部工具栏中间偏右</span></div>
+          <div class="m"><b>不要点「书签」</b><span>是摊开的书本图标，点错会打开书签列表</span></div>
+        </div>
+      </li>
+      <li>
+        <h3>在弹出的列表里往下滑，找到「添加到主屏幕」</h3>
+        <p>它在列表靠下的位置，图标是一个<b>带加号的方框</b>。
+          滑到底部还没看到？点最下面的「编辑操作」，把它加到收藏里。</p>
+      </li>
+      <li>
+        <h3>点右上角「添加」</h3>
+        <p>名字会自动填成「尺码助手」，不用改。点「添加」后回到桌面，就能看到图标了。</p>
+      </li>
+    </ol>
+
+    <div class="note-box mid">
+      <b>iPhone 上有个常见误会：</b>「存储到主屏幕」和「添加到主屏幕」是两个东西。
+      前者是存到「文件」App，不会生成图标。认准<b>图标带加号</b>的那个。
+    </div>
+  </div>
+
+  <!-- Android -->
+  <div class="card" style="margin-top:14px">
+    <h2>Android 怎么加到桌面 <span class="tag">Chrome / Edge</span></h2>
+    <p class="hint">大多数安卓浏览器会自动弹出「安装」提示，比 iPhone 简单。</p>
+
+    <ol class="steps" style="margin-top:16px">
+      <li>
+        <h3>用 Chrome 打开网址</h3>
+        <p>打开后如果底部弹出一条「添加到主屏幕」的提示，直接点就行，不用往下看了。</p>
+      </li>
+      <li>
+        <h3>没弹提示的话，点右上角「⋮」</h3>
+        <p>三个竖排的点，在地址栏右边。</p>
+        <div class="menubar">
+          <div class="m"><b>Chrome</b><span>右键菜单里找「添加到主屏幕」或「安装应用」</span></div>
+          <div class="m"><b>Edge</b><span>菜单里找「添加到手机」</span></div>
+        </div>
+      </li>
+      <li>
+        <h3>点「添加到主屏幕」或「安装」</h3>
+        <p>如果显示的是「安装应用」，说明浏览器识别成了 PWA，装完和真正的 App 几乎一样。</p>
+      </li>
+      <li>
+        <h3>确认添加</h3>
+        <p>弹出确认框点「添加」/「安装」，图标就出现在桌面或应用列表里了。</p>
+      </li>
+    </ol>
+
+    <div class="note-box ok">
+      <b>安卓的好处：</b>装完是独立的窗口，和浏览器完全分离，
+      在后台任务列表里也是一个单独的卡片。
+    </div>
+  </div>
+
+  <!-- 加完之后 -->
+  <div class="card" style="margin-top:14px">
+    <h2>加完之后怎么用 <span class="tag">三步上手</span></h2>
+    <div class="two" style="margin-top:12px">
+      <div>
+        <h3 style="font-size:13.5px;margin-bottom:6px">1. 先录 5 个数</h3>
+        <p style="font-size:12.5px;color:var(--sub);line-height:1.7;margin-bottom:10px">
+          进「尺码」页，只填这 5 项就够开始用：<b>腹围、臀围、大腿围、立裆深、胸围</b>。
+          其他项想到再补，空着不影响计算。
+        </p>
+        <div class="shot">
+          <img src="img/help-profile.png" alt="尺码档案页面">
+        </div>
+      </div>
+      <div>
+        <h3 style="font-size:13.5px;margin-bottom:6px">2. 粘尺寸表看结果</h3>
+        <p style="font-size:12.5px;color:var(--sub);line-height:1.7;margin-bottom:10px">
+          进「比价」页，把商品页的尺寸表整段复制粘进去，点「解析并比对」，
+          它会直接告诉你哪个码能穿、差多少厘米。
+        </p>
+        <div class="shot">
+          <img src="img/help-compare.png" alt="批量比对结果">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAQ -->
+  <div class="card" style="margin-top:14px">
+    <h2>常见问题 <span class="tag">卡住先看这里</span></h2>
+    <div class="faq">
+      <h3>「添加到主屏幕」找不到怎么办？</h3>
+      <p>先确认你是在 <b>Safari（iPhone）</b> 或 <b>Chrome（Android）</b> 里。</p>
+      <p>微信、QQ、抖音里打开的网页没有这个功能——它们用的是内置浏览器。
+        解决办法：点右上角「···」，选「在浏览器中打开」，然后重来一遍。</p>
+
+      <h3>加了图标，点开是白屏？</h3>
+      <p>第一次打开需要联网下载文件，等 5 秒刷新一次。</p>
+      <p>如果一直白屏：删掉图标重新添加一次。或者用浏览器打开网址，
+        长按页面选「刷新」。</p>
+
+      <h3>断网还能用吗？</h3>
+      <p>能，但有个前提：<b>至少成功打开过一次</b>。第一次打开时会把所有文件缓存到手机里，
+        之后就完全离线了。</p>
+      <p>验证方法：打开一次，然后开飞行模式，再点桌面图标——如果还能进去，就是缓存成功了。</p>
+
+      <h3>换手机了，数据怎么搬？</h3>
+      <p>数据不会自动同步（因为没有服务器）。去「尺码」页底部点「复制分享链接」，
+        或者「导出文件」，把链接/文件存到备忘录或网盘，在新手机上打开即可恢复。</p>
+      <p><b>分享链接等于你的身体数据，别发到公开群。</b></p>
+
+      <h3>为什么不用微信小程序？</h3>
+      <p>小程序需要企业主体才能上架，而且数据要经过微信的服务器，
+        和「数据只存在本地」的目标冲突。</p>
+
+      <h3>要不要装 APK？</h3>
+      <p>不需要。加到桌面后体验和 App 一样：全屏、有图标、能离线。
+        打 APK 需要自己搭 Android 构建环境，功能完全一样，但每次改代码都要重新打包。</p>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px">
+    <h2>想自己部署一份 <span class="tag">可选</span></h2>
+    <p class="hint" style="margin-bottom:8px">
+      这个站点是纯静态的，代码全部开源。你可以 fork 一份部署到自己账号下，
+      那样地址会变成 <span class="kbd">你的用户名.github.io/fitcheck/</span>。
+    </p>
+    <a class="btn ghost small" href="https://github.com/zaiyou1227/fitcheck" target="_blank" rel="noopener">
+      看源码
+    </a>
+  </div>
+
+  <div class="footer-note">
+    <b>一句话总结</b>
+    <p>手机上打开网址 → 点菜单里的「添加到主屏幕」→ 以后从图标进。就这三步。</p>
+    <p style="margin-top:8px">数据只存在你手机浏览器里，不上传任何服务器，断网也能用。</p>
+  </div>
+
+</div>
+
+<script src="js/vendor-lz-string.min.js"></script>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+(function () {
+  "use strict";
+  UI.boot();
+
+  document.getElementById("copyUrl").addEventListener("click", function () {
+    var url = "https://zaiyou1227.github.io/fitcheck/";
+    UI.copyText(url).then(function (ok) {
+      UI.toast(ok ? "网址已复制，去手机浏览器粘贴" : "复制失败，请手动输入");
+    });
+  });
+
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("sw.js").catch(function () {});
+    });
+  }
+})();
+</script>
+</body>
+</html>
