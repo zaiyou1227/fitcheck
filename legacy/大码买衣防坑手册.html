@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>大码买衣防坑手册 · 筛店 + 海淘值不值</title>
+<style>
+  :root{
+    --bg:#f7f6f3; --card:#fff; --ink:#1c1c1a; --sub:#6b6a64; --line:#e3e0d8;
+    --hi:#1f6f4a; --hi-bg:#e8f2ec; --warn:#a03c14; --warn-bg:#f9ece4;
+    --mid:#8a6a1f; --mid-bg:#f7f0dd;
+    --mono:"Cascadia Mono","Consolas",monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Microsoft YaHei UI","PingFang SC","Hiragino Sans GB",sans-serif;
+    line-height:1.65;font-size:15px}
+  .wrap{max-width:1180px;margin:0 auto;padding:28px 20px 90px}
+  header{border-bottom:2px solid var(--ink);padding-bottom:16px;margin-bottom:22px}
+  h1{font-size:25px;margin:0 0 6px;letter-spacing:-.3px}
+  .lede{color:var(--sub);font-size:14px;margin:0;max-width:66ch}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+  @media(max-width:900px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 18px 20px}
+  .card h2{font-size:15px;margin:0 0 4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .card h2 .tag{font-size:11px;font-weight:400;color:var(--sub);background:var(--bg);
+    border:1px solid var(--line);border-radius:20px;padding:1px 8px}
+  .hint{color:var(--sub);font-size:12.5px;margin:0 0 14px}
+  .seg{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+  .seg button{flex:1;min-width:70px;padding:7px 6px;border:1px solid var(--line);background:#fdfdfb;
+    border-radius:8px;font-size:12.5px;cursor:pointer;color:var(--sub);font-family:inherit}
+  .seg button[aria-pressed=true]{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+  /* 评分项 */
+  .item{display:flex;gap:10px;align-items:flex-start;padding:9px 10px;border-radius:9px;
+    border:1px solid transparent;margin-bottom:3px;cursor:pointer;user-select:none}
+  .item:hover{background:#faf9f6}
+  .item.on{background:#f3f6f4;border-color:#d3e2d8}
+  .item .box{flex:0 0 18px;width:18px;height:18px;margin-top:2px;border:1.5px solid #c9c5ba;
+    border-radius:5px;background:#fff;position:relative}
+  .item.on .box{background:var(--hi);border-color:var(--hi)}
+  .item.on .box::after{content:"";position:absolute;left:4px;top:0px;width:7px;height:12px;
+    border:solid #fff;border-width:0 2px 2px 0;transform:rotate(40deg)}
+  .item .body{flex:1;min-width:0}
+  .item .t{display:block;font-size:13.5px;font-weight:600}
+  .item .t em{display:inline-block;font-style:normal;font-size:10.5px;font-weight:400;color:#fff;background:var(--warn);
+    border-radius:4px;padding:0 5px;margin-left:6px;vertical-align:1px}
+  .item .d{display:block;font-size:11.5px;color:var(--sub);line-height:1.5}
+  .item .pts{flex:0 0 auto;font-size:11px;color:var(--sub);font-family:var(--mono);margin-top:3px}
+
+  .verdict{border-radius:10px;padding:14px 16px;margin-top:16px}
+  .verdict h3{margin:0 0 6px;font-size:15px}
+  .verdict p{margin:0;font-size:13px}
+  .v-good{background:var(--hi-bg);border:1px solid #c4ddcf}
+  .v-good h3{color:var(--hi)}
+  .v-mid{background:var(--mid-bg);border:1px solid #e6d9b4}
+  .v-mid h3{color:var(--mid)}
+  .v-bad{background:var(--warn-bg);border:1px solid #eccdb9}
+  .v-bad h3{color:var(--warn)}
+  .meter{height:8px;border-radius:6px;background:#ece9e1;overflow:hidden;margin:10px 0 4px}
+  .meter i{display:block;height:100%;width:0;background:var(--hi);transition:width .2s}
+  .scoreline{display:flex;justify-content:space-between;font-size:12px;color:var(--sub);
+    font-family:var(--mono)}
+
+  /* 海淘计算 */
+  .row{display:grid;grid-template-columns:1fr 110px 30px;gap:8px;align-items:center;margin-bottom:9px}
+  .row label{font-size:13px}
+  .row label small{display:block;color:var(--sub);font-size:11.5px;line-height:1.4}
+  input[type=number]{width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:7px;
+    font-family:var(--mono);font-size:14px;background:#fdfdfb;text-align:right}
+  input[type=number]:focus{outline:2px solid #b9d3c4;border-color:var(--hi)}
+  .unit{font-size:12px;color:var(--sub)}
+  .kv{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0eee8;
+    font-size:13.5px}
+  .kv:last-of-type{border-bottom:0}
+  .kv b{font-family:var(--mono);font-size:15px}
+  .big{font-size:23px;font-family:var(--mono);font-weight:700}
+  .ok{color:var(--hi)}
+  .no{color:var(--warn)}
+
+  /* 搜索词 */
+  table.kw{width:100%;border-collapse:collapse;font-size:13px}
+  table.kw th{text-align:left;font-weight:400;color:var(--sub);font-size:11.5px;
+    padding:0 0 6px;border-bottom:1px solid var(--line)}
+  table.kw td{padding:8px 6px 8px 0;border-bottom:1px solid #f0eee8;vertical-align:top}
+  code{background:#efeee9;border-radius:4px;padding:1px 5px;font-family:var(--mono);font-size:12px}
+  .copyrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;
+    border:1px solid var(--ink);background:var(--ink);color:#fff;font-size:13px;
+    cursor:pointer;font-family:inherit}
+  .btn.ghost{background:#fff;color:var(--ink)}
+  .btn:active{transform:translateY(1px)}
+  .note{font-size:12px;color:var(--sub);margin-top:10px}
+  .foot{margin-top:26px;padding-top:14px;border-top:1px solid var(--line);
+    color:var(--sub);font-size:12.5px}
+  .foot ol{padding-left:20px;margin:6px 0}
+  .foot li{margin-bottom:6px}
+  .warnbox{background:var(--warn-bg);border:1px solid #eccdb9;border-radius:9px;
+    padding:11px 13px;font-size:13px;margin-top:12px}
+  details{margin-top:12px}
+  summary{cursor:pointer;font-size:13px;color:var(--hi)}
+  details p{font-size:12.5px;color:var(--sub);margin:6px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>大码买衣防坑手册</h1>
+  <p class="lede">上半页：<b>判断一家店值不值得长期买</b>，不用靠“听没听过这个牌子”。<br>
+  下半页：<b>海淘到底划不划算</b>，把试错成本算成钱，而不是凭感觉。</p>
+</header>
+
+<div class="grid">
+
+  <!-- ============ 左：筛店 ============ -->
+  <div>
+    <div class="card">
+      <h2>① 这家店能长期买吗 <span class="tag">点选已满足的项</span></h2>
+      <p class="hint">大码这行没有可信的口碑机制——用户少、样本小、刷单多。所以别查牌子，
+      查这 9 条。标「关键」的三条缺一条就别建立长期关系。</p>
+
+      <div id="items"></div>
+
+      <div class="meter"><i id="meterBar"></i></div>
+      <div class="scoreline"><span id="scoreTxt">0 / 12 分</span><span id="keyTxt"></span></div>
+      <div id="verdict" class="verdict v-bad">
+        <h3>先别下大单</h3>
+        <p>把上面 9 条过一遍，再决定用不用这家。</p>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:18px">
+      <h2>② 搜索词怎么写 <span class="tag">别用码数当关键词</span></h2>
+      <p class="hint">搜“XXXL”等于把尺码定义权交给对方。搜<strong>品类 + 特体词</strong>，
+      才会出来真正做这行的店。</p>
+      <table class="kw">
+        <thead><tr><th>品类</th><th>直接复制去搜</th></tr></thead>
+        <tbody>
+          <tr><td>男装裤子</td><td><code>男 大码 特体 加肥加大 休闲裤 阔腿</code></td></tr>
+          <tr><td>男装上衣</td><td><code>男 加肥加大 特体 衬衫 免烫 宽松</code></td></tr>
+          <tr><td>男装外套</td><td><code>男 大码 加肥 夹克 宽松 外贸</code></td></tr>
+          <tr><td>女装裤子</td><td><code>大码女装 胖mm 阔腿裤 加肥加大 高腰</code></td></tr>
+          <tr><td>女装上衣</td><td><code>大码女装 胖mm 上衣 宽松 遮肚 特体</code></td></tr>
+          <tr><td>男女通用</td><td><code>外贸大码 尾单 原单 特体 加肥加大</code></td></tr>
+        </tbody>
+      </table>
+      <p class="note">补两个关键动作：搜完先按「销量」看同款有没有卖过多个季度；
+      进店先翻「问大家」，那里比评价区真实。</p>
+    </div>
+  </div>
+
+  <!-- ============ 右：海淘计算 ============ -->
+  <div>
+    <div class="card">
+      <h2>③ 海淘值不值 <span class="tag">把试错成本算成钱</span></h2>
+      <p class="hint">海淘大码真实的问题不是贵，是<b>退一次货可能比衣服还贵</b>。
+      这里算的是“最后真正穿上身的那一件，相当于花了多少钱”。</p>
+
+      <div class="row">
+        <label for="price">衣服价格<small>含税到手前</small></label>
+        <input type="number" id="price" value="400" min="0" step="10">
+        <span class="unit">元</span>
+      </div>
+      <div class="row">
+        <label for="ship">国际运费 + 税费<small>转运或直邮</small></label>
+        <input type="number" id="ship" value="120" min="0" step="10">
+        <span class="unit">元</span>
+      </div>
+      <div class="row">
+        <label for="returnCost">退货运费<small>寄回美国/欧洲，通常 80–300</small></label>
+        <input type="number" id="returnCost" value="150" min="0" step="10">
+        <span class="unit">元</span>
+      </div>
+
+      <div class="seg" id="fitSeg" role="group" aria-label="你判断这件能穿上的把握">
+        <button data-v="0.9" aria-pressed="false">很有把握<br><small>知道同牌尺码</small></button>
+        <button data-v="0.7" aria-pressed="true">大概<br><small>有平铺数据</small></button>
+        <button data-v="0.45" aria-pressed="false">赌一把<br><small>只有模特图</small></button>
+      </div>
+
+      <div class="kv"><span>成功穿上的概率</span><b id="pOut">70%</b></div>
+      <div class="kv"><span>退一次的平均损失</span><b id="lossOut">45 元</b></div>
+      <div class="kv"><span>算上试错，单件真实成本</span><b class="big ok" id="trueOut">807 元</b></div>
+      <div id="advice"></div>
+
+      <details>
+        <summary>这个数怎么来的</summary>
+        <p>单件真实成本 =（价格 + 运费 + 退货运费 × 失败率）÷ 成功率。</p>
+        <p>意思是：你每买到一件能穿的，背后都摊上了若干次退货的运费。海淘退货运费高，
+      所以只要成功率不到七八成，真实成本就会翻倍——这时候同样的钱在淘宝买三件试，
+      反而更便宜。</p>
+      </details>
+    </div>
+
+    <div class="card" style="margin-top:18px">
+      <h2>④ 三条能直接用的渠道常识 <span class="tag">不用背品牌</span></h2>
+      <div class="kv"><span>欧美码 vs 中国码</span><b>同标号大 1–2 码</b></div>
+      <div class="kv"><span>美码 5XL 的胸围</span><b>≈ 150–160cm</b></div>
+      <div class="kv"><span>海淘退货窗口</span><b>通常 14–30 天</b></div>
+      <p class="note">所以：<b>只比围度，不比码数。</b>下单前先确认
+      “能不能只退不退运费”、以及转运仓有没有退货服务——没有的话，退货运费会极其难看。</p>
+      <div class="warnbox">
+        <b>最容易踩的坑：</b>转运公司大多不帮你退货。要么选支持直邮退货的店，
+        要么先用转运仓的“境内退货”服务，否则那件不合身的衣服只能烂在手里。
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="foot">
+  <b>把这套跑顺的完整流程</b>
+  <ol>
+    <li>先用<a href="裤子尺寸换算器.html">裤子尺寸换算器</a>量出你的固定数字，存手机里。</li>
+    <li>搜「品类 + 特体词」，进店先看有没有<b>平铺尺寸表</b>——没有的直接关掉，不用再看了。</li>
+    <li>用上面 9 条给这家店打分。<b>9 分以上且三条关键项全中</b>，才开始试单。</li>
+    <li>第一次只买 1 件、带运费险。合身就把这家存下来，问老板“有没有微信/群”，
+    以后直接按尺寸复购——这才是省时间的核心。</li>
+    <li>海淘只用在下单前算过：成功率不到 7 成，或者没有境内退货渠道，就别赌。</li>
+  </ol>
+</div>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- 评分项定义 ----------
+  // key: 关键项，权重 2。其余权重 1。总分 12。
+  var ITEMS = [
+    { id:"flat", key:true, pts:2, t:"详情页有平铺实测尺寸",
+      d:"给的是平铺宽度/围度，不是「建议120-150斤」。尤其是裤子的后裆和大腿围。" },
+    { id:"self", key:true, pts:2, t:"支持按你的围度定做",
+      d:"这是唯一能绕过「没你的码」的办法。哪怕贵一点，也说明店家真的在做这行。" },
+    { id:"after", key:true, pts:2, t:"售后写得清楚（含退换规则）",
+      d:"详情页明写运费险、七天无理由、不合适怎么办。含糊其辞的店，退货时一定扯皮。" },
+    { id:"photo", pts:1, t:"有自己拍的实拍图或工厂图",
+      d:"不是全网盗图、不是纯模特图。盗图的店连货都不是自己的。" },
+    { id:"season", pts:1, t:"同款卖过好几个季度",
+      d:"能长期卖同一版型，说明版型和供应链稳定，不是打一枪换一个地方。" },
+    { id:"qa", pts:1, t:"「问大家」里有真实体型反馈",
+      d:"比评价区真实得多。重点看和你体重接近的人怎么说。" },
+    { id:"fast", pts:1, t:"客服能当场报出具体数字",
+      d:"你问后裆多少，他能回一个数，而不是「亲亲能穿的」。" },
+    { id:"custom", pts:1, t:"有加肥加大专版/定制版",
+      d:"不是把普通版放大，而是单独开的版。差别很大。" },
+    { id:"friend", pts:1, t:"有老客群 / 复购机制",
+      d:"说明有一批人反复买。这是最硬的口碑证据，比任何测评都可靠。" }
+  ];
+  var MAX = ITEMS.reduce(function(a,b){ return a + b.pts; }, 0);
+
+  var state = {};
+  ITEMS.forEach(function(it){ state[it.id] = false; });
+
+  // ---------- 渲染评分项 ----------
+  var box = document.getElementById("items");
+  ITEMS.forEach(function(it){
+    var div = document.createElement("div");
+    div.className = "item";
+    div.dataset.id = it.id;
+    div.setAttribute("role", "checkbox");
+    div.setAttribute("tabindex", "0");
+    div.setAttribute("aria-checked", "false");
+    div.innerHTML =
+      '<span class="box"></span>' +
+      '<span class="body"><span class="t">' + it.t + (it.key ? '<em>关键</em>' : '') + '</span>' +
+      '<span class="d">' + it.d + '</span></span>' +
+      '<span class="pts">' + it.pts + '</span>';
+    box.appendChild(div);
+  });
+
+  // 事件委托：点到内部任何子元素都能正确识别
+  function itemOf(target){
+    var n = target;
+    while(n && n !== box){
+      if(n.classList && n.classList.contains("item")) return n;
+      n = n.parentNode;
+    }
+    return null;
+  }
+
+  box.addEventListener("click", function(ev){
+    var el = itemOf(ev.target);
+    if(el) toggle(el.dataset.id, el);
+  });
+
+  box.addEventListener("keydown", function(ev){
+    if(ev.key !== " " && ev.key !== "Enter") return;
+    var el = itemOf(ev.target);
+    if(el){ ev.preventDefault(); toggle(el.dataset.id, el); }
+  });
+
+  function toggle(id, el){
+    state[id] = !state[id];
+    el.classList.toggle("on", state[id]);
+    el.setAttribute("aria-checked", state[id] ? "true" : "false");
+    renderScore();
+  }
+
+  // ---------- 评分 + 结论 ----------
+  function renderScore(){
+    var score = 0, keyHit = 0, keyTotal = 0;
+    ITEMS.forEach(function(it){
+      if(it.key) keyTotal++;
+      if(state[it.id]){ score += it.pts; if(it.key) keyHit++; }
+    });
+
+    var pct = Math.round(score / MAX * 100);
+    var bar = document.getElementById("meterBar");
+    bar.style.width = pct + "%";
+    bar.style.background = score >= 9 && keyHit === keyTotal ? "var(--hi)"
+                        : (score >= 7 ? "var(--mid)" : "var(--warn)");
+
+    document.getElementById("scoreTxt").textContent = score + " / " + MAX + " 分";
+    document.getElementById("keyTxt").textContent = "关键项 " + keyHit + " / " + keyTotal;
+
+    var v = document.getElementById("verdict");
+    if(keyHit === keyTotal && score >= 9){
+      v.className = "verdict v-good";
+      v.innerHTML = "<h3>可以建立长期关系</h3><p>先把这家存下来（店名、微信、" +
+        "你上次买的型号和尺码）。以后复购直接报数字，不用重新赌。</p>";
+    } else if(keyHit === keyTotal && score >= 7){
+      v.className = "verdict v-mid";
+      v.innerHTML = "<h3>值得试单，但先别囤</h3><p>关键项都齐了，说明这家在做正事。" +
+        "先买 1 件带运费险，合身了再把它升级成固定店。</p>";
+    } else if(score >= 7 && keyHit < keyTotal){
+      v.className = "verdict v-mid";
+      v.innerHTML = "<h3>有亮点，但缺关键项</h3><p>分数不低，可关键的几条没满足——" +
+        "这类店最容易出现「看着挺专业，买回来还是不合身」。先补齐关键项再谈长期。</p>";
+    } else {
+      v.className = "verdict v-bad";
+      v.innerHTML = "<h3>先别下大单</h3><p>这个组合踩雷概率高。要么继续找，要么只用它买" +
+        "一件特别便宜的东西试水，不要一次买两三件。</p>";
+    }
+  }
+
+  // ---------- 海淘计算 ----------
+  var P_SUCCESS = 0.7;
+  document.getElementById("fitSeg").addEventListener("click", function(ev){
+    var b = ev.target.closest("button");
+    if(!b) return;
+    this.querySelectorAll("button").forEach(function(x){
+      x.setAttribute("aria-pressed", x === b ? "true" : "false");
+    });
+    P_SUCCESS = parseFloat(b.dataset.v);
+    calc();
+  });
+
+  function num(id){
+    var v = parseFloat(document.getElementById(id).value);
+    return isFinite(v) && v >= 0 ? v : 0;
+  }
+  function money(x){ return Math.round(x) + " 元"; }
+
+  function calc(){
+    var price = num("price"), ship = num("ship"), ret = num("returnCost");
+    var p = P_SUCCESS;
+    var loss = (1 - p) * ret;              // 每次尝试摊的平均退货损失
+    var trueCost = (price + ship + loss) / p;
+
+    document.getElementById("pOut").textContent = Math.round(p * 100) + "%";
+    document.getElementById("lossOut").textContent = money(loss);
+    document.getElementById("trueOut").textContent = money(trueCost);
+    document.getElementById("trueOut").className = "big " + (p >= 0.7 ? "ok" : "no");
+
+    var adv = document.getElementById("advice");
+    var domestic = trueCost / 1.0;
+    if(p < 0.6){
+      adv.className = "warnbox";
+      adv.innerHTML = "<b>别赌。</b>成功率不到六成时，单件真实成本已经被退货吃掉了——" +
+        "同样的钱在国内能买三件带着运费险试。先在国内把尺寸摸准，再来海淘。";
+    } else if(p < 0.75){
+      adv.className = "warnbox";
+      adv.innerHTML = "<b>可以试，但只买一件。</b>务必先确认退货运费到底多少、" +
+        "转运仓能不能帮你退，再下单。";
+    } else {
+      adv.className = "note";
+      adv.textContent = "成功率足够高，海淘这件事在这件衣服上是划算的。注意别一次买多件不同尺码。";
+    }
+  }
+
+  ["price","ship","returnCost"].forEach(function(id){
+    document.getElementById(id).addEventListener("input", calc);
+  });
+
+  renderScore();
+  calc();
+})();
+</script>
+</body>
+</html>

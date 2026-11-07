@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>裤子尺寸换算器 · 按围度买，不按码数买</title>
+<style>
+  :root{
+    --bg:#f7f6f3; --card:#fff; --ink:#1c1c1a; --sub:#6b6a64; --line:#e3e0d8;
+    --hi:#1f6f4a; --hi-bg:#e8f2ec; --warn:#a03c14; --warn-bg:#f9ece4;
+    --mono:"Cascadia Mono","Consolas",monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Microsoft YaHei UI","PingFang SC","Hiragino Sans GB",sans-serif;
+    line-height:1.65;font-size:15px}
+  .wrap{max-width:1180px;margin:0 auto;padding:28px 20px 90px}
+  header{border-bottom:2px solid var(--ink);padding-bottom:16px;margin-bottom:22px}
+  h1{font-size:25px;margin:0 0 6px;letter-spacing:-.3px}
+  .lede{color:var(--sub);font-size:14px;margin:0;max-width:62ch}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start;
+    grid-template-areas:"inputs out" "inputs card"}
+  @media(max-width:900px){.grid{grid-template-columns:1fr;grid-template-areas:"inputs" "out" "card"}}
+  .col-inputs{grid-area:inputs}
+  .out{grid-area:out}
+  .cardarea{grid-area:card}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 18px 20px}
+  .card h2{font-size:15px;margin:0 0 4px;display:flex;align-items:center;gap:8px}
+  .card h2 .tag{font-size:11px;font-weight:400;color:var(--sub);background:var(--bg);
+    border:1px solid var(--line);border-radius:20px;padding:1px 8px}
+  .hint{color:var(--sub);font-size:12.5px;margin:0 0 14px}
+  .row{display:grid;grid-template-columns:1fr 96px 34px;gap:8px;align-items:center;
+    margin-bottom:9px}
+  .row label{font-size:13.5px;cursor:help}
+  .row label small{display:block;color:var(--sub);font-size:11.5px;line-height:1.4}
+  input[type=number]{width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:7px;
+    font-family:var(--mono);font-size:14px;background:#fdfdfb;text-align:right}
+  input[type=number]:focus{outline:2px solid #b9d3c4;border-color:var(--hi)}
+  .unit{font-size:12px;color:var(--sub)}
+  .seg{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+  .seg button{flex:1;min-width:78px;padding:7px 6px;border:1px solid var(--line);background:#fdfdfb;
+    border-radius:8px;font-size:12.5px;cursor:pointer;color:var(--sub);font-family:inherit}
+  .seg button[aria-pressed=true]{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .divider{border:0;border-top:1px dashed var(--line);margin:16px 0}
+  .out{align-self:start}
+  table.res{width:100%;border-collapse:collapse;font-size:13.5px}
+  table.res th{text-align:left;font-weight:400;color:var(--sub);font-size:11.5px;
+    padding:0 0 6px;border-bottom:1px solid var(--line)}
+  table.res td{padding:9px 0;border-bottom:1px solid #f0eee8;vertical-align:top}
+  table.res td:last-child{text-align:right;font-family:var(--mono);font-size:14px;white-space:nowrap}
+  .big{font-weight:700;color:var(--hi)}
+  .crit{background:var(--warn-bg);border:1px solid #eccdb9;border-radius:9px;
+    padding:11px 13px;margin:14px 0 0;font-size:13px}
+  .crit b{color:var(--warn)}
+  .okbox{background:var(--hi-bg);border:1px solid #c4ddcf;border-radius:9px;
+    padding:11px 13px;margin:14px 0 0;font-size:13px}
+  .cardtxt{width:100%;min-height:210px;margin-top:10px;padding:12px;border:1px solid var(--line);
+    border-radius:9px;background:#fdfdfb;font-family:var(--mono);font-size:12px;
+    line-height:1.6;resize:vertical;color:var(--ink);overflow:hidden}
+  .cardtxt[data-empty="1"]{min-height:150px}
+  .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;
+    border:1px solid var(--ink);background:var(--ink);color:#fff;font-size:13px;
+    cursor:pointer;font-family:inherit;margin-top:10px}
+  .btn.ghost{background:#fff;color:var(--ink)}
+  .btn:active{transform:translateY(1px)}
+  .note{font-size:12px;color:var(--sub);margin-top:10px}
+  .foot{margin-top:26px;padding-top:14px;border-top:1px solid var(--line);
+    color:var(--sub);font-size:12.5px}
+  .foot ol{padding-left:20px;margin:6px 0}
+  .foot li{margin-bottom:5px}
+  details{margin-top:12px}
+  summary{cursor:pointer;font-size:13px;color:var(--hi)}
+  details p{font-size:12.5px;color:var(--sub)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>裤子尺寸换算器</h1>
+  <p class="lede">不看 S/M/L，只看四个数：<b>腰围、臀围、大腿围、后裆长</b>。<br>
+  填入你身上量到的数（或一条穿着舒服的旧裤子），下面会算出你该在商品页里找的区间。</p>
+</header>
+
+<div class="grid">
+
+  <!-- ============ 左：输入 ============ -->
+  <div class="col-inputs">
+    <div class="card">
+      <h2>① 量身体 <span class="tag">净尺寸，软尺贴身不勒</span></h2>
+      <p class="hint">全部用厘米。不知道就空着，只填你有的——空着的项不参与计算。</p>
+
+      <div class="row">
+        <label for="waist">腰围<small>裤腰要落在的那个位置，一圈</small></label>
+        <input type="number" id="waist" step="0.5" placeholder="—" data-k="waist">
+        <span class="unit">cm</span>
+      </div>
+      <div class="row">
+        <label for="belly">腹围<small>腰以下肚子最凸处一圈。大体重常见腰围小、腹围大</small></label>
+        <input type="number" id="belly" step="0.5" placeholder="—" data-k="belly">
+        <span class="unit">cm</span>
+      </div>
+      <div class="row">
+        <label for="hip">臀围<small>臀部最丰满处一圈</small></label>
+        <input type="number" id="hip" step="0.5" placeholder="—" data-k="hip">
+        <span class="unit">cm</span>
+      </div>
+      <div class="row">
+        <label for="thigh">大腿围<small>大腿根部最粗处，单腿一圈</small></label>
+        <input type="number" id="thigh" step="0.5" placeholder="—" data-k="thigh">
+        <span class="unit">cm</span>
+      </div>
+      <div class="row">
+        <label for="knee">膝围<small>可选；紧身/锥形裤才要看</small></label>
+        <input type="number" id="knee" step="0.5" placeholder="—" data-k="knee">
+        <span class="unit">cm</span>
+      </div>
+      <div class="row">
+        <label for="inseam">内长<small>裆底到脚踝内侧，腿长</small></label>
+        <input type="number" id="inseam" step="0.5" placeholder="—" data-k="inseam">
+        <span class="unit">cm</span>
+      </div>
+      <div class="row">
+        <label for="rise">立裆深<small>可选。坐着量：裤腰位置到椅面</small></label>
+        <input type="number" id="rise" step="0.5" placeholder="—" data-k="rise">
+        <span class="unit">cm</span>
+      </div>
+
+      <hr class="divider">
+      <h2 style="font-size:13.5px">裤腰穿在哪 <span class="tag">影响腰围该按哪个数算</span></h2>
+      <div class="seg" id="heightSeg" role="group" aria-label="裤腰高度">
+        <button data-v="high" aria-pressed="true">腰上<br><small>肚子上方</small></button>
+        <button data-v="mid" aria-pressed="false">正中<br><small>压在肚子上</small></button>
+        <button data-v="low" aria-pressed="false">腰下<br><small>肚子下面</small></button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:18px">
+      <h2>② 面料与版型 <span class="tag">决定要留多少余量</span></h2>
+      <div class="seg" id="fabricSeg" role="group" aria-label="面料弹性">
+        <button data-v="none" aria-pressed="true">无弹梭织<br><small>牛仔/西裤</small></button>
+        <button data-v="some" aria-pressed="false">微弹<br><small>含氨纶</small></button>
+        <button data-v="high" aria-pressed="false">高弹<br><small>打底/运动</small></button>
+      </div>
+      <div class="seg" id="fitSeg" role="group" aria-label="松紧偏好">
+        <button data-v="loose" aria-pressed="true">宽松</button>
+        <button data-v="regular" aria-pressed="false">合身</button>
+        <button data-v="slim" aria-pressed="false">紧一点</button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:18px">
+      <h2>③ 更准的办法：量一条旧裤子 <span class="tag">推荐</span></h2>
+      <p class="hint">找一条<b>现在穿着最舒服</b>的裤子，平铺在床上量。这套数比量身体准得多，
+      因为里面已经包含了它本来就合适的松量。填了这项就优先用它，第①②块可以只作参考。</p>
+
+      <div class="row">
+        <label for="gWaist">腰头平量<small>扣好扣子平铺，左右边对边横量</small></label>
+        <input type="number" id="gWaist" step="0.5" placeholder="—" data-k="gWaist">
+        <span class="unit">cm</span>
+      </div>
+      <div class="row">
+        <label for="gHip">臀围平量<small>拉链下最宽处，横量</small></label>
+        <input type="number" id="gHip" step="0.5" placeholder="—" data-k="gHip">
+        <span class="unit">cm</span>
+      </div>
+      <div class="row">
+        <label for="gThigh">大腿平量<small>裆缝下 2cm 处单层宽度</small></label>
+        <input type="number" id="gThigh" step="0.5" placeholder="—" data-k="gThigh">
+        <span class="unit">cm</span>
+      </div>
+      <div class="row">
+        <label for="gRiseF">前裆长<small>前腰头中点 → 裆缝十字</small></label>
+        <input type="number" id="gRiseF" step="0.5" placeholder="—" data-k="gRiseF">
+        <span class="unit">cm</span>
+      </div>
+      <div class="row">
+        <label for="gRiseB">后裆长<small>后腰头中点 → 裆缝十字。最关键的一项</small></label>
+        <input type="number" id="gRiseB" step="0.5" placeholder="—" data-k="gRiseB">
+        <span class="unit">cm</span>
+      </div>
+      <div class="row">
+        <label for="gLength">裤长<small>腰头 → 裤脚</small></label>
+        <input type="number" id="gLength" step="0.5" placeholder="—" data-k="gLength">
+        <span class="unit">cm</span>
+      </div>
+      <div class="seg" id="measureSeg" role="group" aria-label="平量口径" style="margin-top:12px">
+        <button data-v="half" aria-pressed="true">填的是单面平量</button>
+        <button data-v="full" aria-pressed="false">填的已是整圈</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 中：结果 ============ -->
+  <div class="out card">
+    <h2>该找什么数 <span class="tag">商品页 / 客服 对照</span></h2>
+    <p class="hint" id="srcHint">还没填数据。</p>
+
+    <table class="res">
+      <thead><tr><th>部位</th><th>目标区间</th></tr></thead>
+      <tbody id="resBody"></tbody>
+    </table>
+
+    <div id="flags"></div>
+  </div>
+
+  <!-- ============ 右：话术 ============ -->
+  <div class="card cardarea">
+    <h2>发给客服的话 <span class="tag">直接复制</span></h2>
+    <textarea id="card" class="cardtxt" readonly placeholder="填完数据后，这里会生成一段可以直接发给店主的话"></textarea>
+    <div>
+      <button class="btn" id="copyCard">复制这段话</button>
+      <button class="btn ghost" id="saveBtn">保存我的数据</button>
+      <button class="btn ghost" id="resetBtn">清空</button>
+    </div>
+    <p class="note" id="copyMsg"></p>
+
+    <details>
+      <summary>这几个数为什么要这样算？</summary>
+      <p><b>大腿围是最容易翻车的一项。</b>商品页写的「大腿围」，指的是裤子裆下那一圈的内周长；
+      坐下时大腿会膨胀 2–4cm，所以裤子实际要比你的大腿围大 5cm 以上才不勒。很多商家只写腰围和裤长，
+      就是不写大腿围——这种店可以直接跳过。</p>
+      <p><b>后裆长决定你还敢不敢坐下。</b>后裆太短，一坐就勒裆、往下坠、后腰露一截。大体重人群下蹲时
+      臀腿位移大，后裆需求比标准体型更长，这是「腰围明明对了，穿着还是难受」的头号原因。</p>
+      <p><b>腹围要单独量</b>，因为腰围量在最细处、肚子往往低一截；只看腰围买回来的裤子会卡在小腹上。
+      上面那个「裤腰穿在哪」就是在定这件事：压在肚子上或肚子以下穿的，腰围必须按腹围算。</p>
+    </details>
+  </div>
+</div>
+
+<div class="foot">
+  <b>怎么用这份数去买</b>
+  <ol>
+    <li>淘宝/抖音搜索时带上品类词 + <b>「大码 特体 加肥加大 外贸 阔腿」</b>这类词，别只搜「XXXL」。</li>
+    <li>进店先看有没有<b>平铺尺寸表</b>（不是「建议身高体重」那种表）。有平铺表的店才值得往下谈。</li>
+    <li>把上面那段话发给客服，要求对方<b>报出实测的四个数</b>。对方回「能穿」「拍一个XXL就行」就换一家。</li>
+    <li>重点看<b>后裆长</b>和<b>大腿围</b>——这两项不达标，其他数值再漂亮也别买。</li>
+    <li>下单优先带运费险，备注不合适退换。</li>
+  </ol>
+</div>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var DEFAULTS = { fabric:"none", fit:"loose", measureMode:"half", height:"high" };
+  var S = {
+    waist:null, belly:null, hip:null, thigh:null, knee:null, inseam:null, rise:null,
+    gWaist:null, gHip:null, gThigh:null, gRiseF:null, gRiseB:null, gLength:null,
+    fabric:DEFAULTS.fabric, fit:DEFAULTS.fit, measureMode:DEFAULTS.measureMode, height:DEFAULTS.height
+  };
+
+  // ---------- 松量规则（厘米） ----------
+  // 依据：无弹梭织要留出坐下/弯腰的量；弹性面料可压缩。
+  var EASE = {
+    none: { waist:2.0, belly:6.0, hip:5.0, thigh:7.5, knee:4.0 },
+    some: { waist:1.0, belly:4.0, hip:3.5, thigh:5.5, knee:2.5 },
+    high: { waist:-1.5, belly:1.5, hip:1.0, thigh:3.0, knee:0.5 }
+  };
+  var FIT_ADJ = {
+    loose:   { waist:2.0, belly:3.0, hip:3.0, thigh:3.0 },
+    regular: { waist:0.0, belly:0.0, hip:0.0, thigh:0.0 },
+    slim:    { waist:-1.0, belly:-1.5, hip:-1.5, thigh:-1.5 }
+  };
+  var HEIGHT_TXT = { high:"腰上（肚子上方）", mid:"正中（压在肚子上）", low:"腰下（肚子下面）" };
+
+  function num(k){ var v=S[k]; return (typeof v==="number" && isFinite(v) && v>0) ? v : null; }
+  function fmt(x){ return (Math.round(x*10)/10).toFixed(1).replace(/\.0$/,""); }
+
+  // 平量 → 整圈（只有围度量要×2，裆长/裤长是长度，不乘）
+  function girth(k){
+    var v = num(k); if(v===null) return null;
+    if(k==="gWaist"||k==="gHip"||k==="gThigh"){
+      return S.measureMode === "half" ? v*2 : v;
+    }
+    return v;
+  }
+
+  function compute(){
+    var e = EASE[S.fabric] || EASE.none;
+    var f = FIT_ADJ[S.fit] || FIT_ADJ.regular;
+    var rows = [], flags = [];
+
+    var bw = num("waist"), bb = num("belly"), bh = num("hip"), bt = num("thigh"),
+        bk = num("knee"), bi = num("inseam"), br = num("rise");
+    var gw = girth("gWaist"), gh = girth("gHip"), gt = girth("gThigh"),
+        grf = num("gRiseF"), grb = num("gRiseB"), gl = num("gLength");
+
+    // 裤腰基准：旧裤子优先；否则按「裤腰穿在哪」决定用腰围还是腹围
+    var waistBase = null, waistBaseFrom = "";
+    if(gw !== null){ waistBase = gw; waistBaseFrom = "old"; }
+    else if(bw !== null || bb !== null){
+      if(S.height === "high"){ waistBase = bw !== null ? bw : bb; waistBaseFrom = "waist"; }
+      else { waistBase = bb !== null ? bb : bw; waistBaseFrom = "belly"; }
+    }
+
+    // === 腰围 ===
+    if(waistBase !== null){
+      var target = waistBase + e.waist + f.waist;
+      rows.push({k:"腰围（裤腰一圈）", lo:target-1, hi:target+2, star:true});
+    }
+
+    // === 臀围 ===
+    var hipTarget = gh !== null ? gh : (bh !== null ? bh + e.hip + f.hip : null);
+    if(hipTarget !== null) rows.push({k:"臀围（拉链下最宽一圈）", lo:hipTarget-1, hi:hipTarget+3, star:false});
+
+    // === 大腿围（核心） ===
+    var thighTarget = gt !== null ? gt
+                    : (bt !== null ? bt*(1+0.10) + e.thigh + f.thigh : null);
+    if(thighTarget !== null) rows.push({k:"大腿围（裆下 2cm 一圈）", lo:thighTarget, hi:thighTarget+4, star:true});
+
+    // === 后裆长（核心） ===
+    var riseBTarget = grb !== null ? grb
+                    : (br !== null ? br + 8 : null);
+    if(riseBTarget !== null) rows.push({k:"后裆长（后腰中→裆缝）", lo:riseBTarget-1, hi:riseBTarget+2, star:true});
+
+    // === 前裆长（参考） ===
+    var riseFTarget = grf !== null ? grf
+                    : (br !== null ? br - 6 : null);
+    if(riseFTarget !== null) rows.push({k:"前裆长（前腰中→裆缝）", lo:riseFTarget-1, hi:riseFTarget+2, star:false});
+
+    // === 裤长 ===
+    var lenTarget = null;
+    if(gl !== null) lenTarget = gl;
+    else if(bi !== null){
+      var bodyRise = br !== null ? br : 30;          // 大体重立裆深常 28–32
+      var riseF = riseFTarget !== null ? riseFTarget : bodyRise - 6;
+      lenTarget = riseF + bodyRise + bi + 2;
+    }
+    if(lenTarget !== null) rows.push({k:"裤长（腰头→裤脚）", lo:lenTarget-3, hi:lenTarget+3, star:false});
+    if(bi !== null) rows.push({k:"内长（腿长）", lo:bi, hi:bi+4, star:false});
+
+    // === 膝围 ===
+    if(bk !== null && S.fit === "slim"){
+      rows.push({k:"膝围（膝盖一圈）", lo:bk+e.knee+2, hi:bk+e.knee+6, star:false});
+    }
+
+    // ---------- 风险提示 ----------
+    if(riseBTarget !== null){
+      var threshold = br !== null ? Math.max(34, br+6) : 34;
+      if(riseBTarget < threshold){
+        flags.push({t:"warn", html:"<b>后裆长 " + fmt(riseBTarget) + "cm 不够，这条裤子大概率坐不下。</b>" +
+          "大体重人群后裆低于 " + fmt(threshold) + "cm，坐下就勒裆、往下坠、后腰露一截。" +
+          "对方要是报不出后裆这个数，直接换店。"});
+      } else {
+        flags.push({t:"ok", html:"后裆 " + fmt(riseBTarget) + "cm 达标（≥" + fmt(threshold) + "cm），坐下这一关能过。"});
+      }
+    }
+
+    if(bt !== null && thighTarget !== null){
+      var gap = thighTarget - bt;
+      if(gap < 5) flags.push({t:"warn", html:"<b>大腿围只留了 " + fmt(gap) + "cm 余量。</b>" +
+        "坐下时大腿会粗 2–4cm，这个余量基本只能站着好看、坐着难受。建议至少留 5cm，8cm 更稳。"});
+      else flags.push({t:"ok", html:"大腿围留了 " + fmt(gap) + "cm 余量，坐下有余地，这一项安全。"});
+    }
+
+    if(bb !== null && bw !== null && (bb - bw) >= 8){
+      if(S.height === "high"){
+        flags.push({t:"warn", html:"<b>你的腹围比腰围大 " + fmt(bb-bw) + "cm。</b>" +
+          "按「裤腰在肚子上方」算的腰围，穿上的时候肚子会顶住裤腰前侧——中高腰款能穿，低腰款一定卡。选款时挑<b>前裆长的中高腰</b>。"});
+      } else {
+        flags.push({t:"warn", html:"<b>腹围比腰围大 " + fmt(bb-bw) + "cm，腰围已按腹围算，所以数字偏大是正常的。</b>" +
+          "别被「腰围 110+」吓到，那是压着肚子穿必须的尺寸。"});
+      }
+    }
+
+    if(rows.length === 0){
+      flags.push({t:"warn", html:"还没有可算的数据。至少填一下 <b>腰围</b> 或 <b>大腿围</b>，或者量一条旧裤子。"});
+    }
+
+    return {rows:rows, flags:flags};
+  }
+
+  // ---------- 渲染 ----------
+  function render(){
+    var data = compute();
+    var tbody = document.getElementById("resBody");
+    tbody.innerHTML = "";
+    data.rows.forEach(function(row){
+      var tr = document.createElement("tr");
+      var name = document.createElement("td");
+      name.textContent = row.k + (row.star ? " ★" : "");
+      var val = document.createElement("td");
+      var span = document.createElement("span");
+      if(row.star) span.className = "big";
+      span.textContent = fmt(row.lo) + " – " + fmt(row.hi) + " cm";
+      val.appendChild(span);
+      tr.appendChild(name); tr.appendChild(val);
+      tbody.appendChild(tr);
+    });
+
+    var src = [];
+    if(num("gWaist")!==null || num("gThigh")!==null || num("gRiseB")!==null) src.push("旧裤子实测");
+    if(num("waist")!==null || num("thigh")!==null || num("belly")!==null) src.push("身体围度");
+    document.getElementById("srcHint").textContent = src.length
+      ? "数据来源：" + src.join(" + ") + "。★ 是决定能不能穿的四项。"
+      : "还没填数据。填左边任意一组，这里会实时更新。";
+
+    var fl = document.getElementById("flags");
+    fl.innerHTML = "";
+    data.flags.forEach(function(f){
+      var d = document.createElement("div");
+      d.className = f.t === "warn" ? "crit" : "okbox";
+      d.innerHTML = f.html;
+      fl.appendChild(d);
+    });
+
+    document.getElementById("card").value = buildCard(data);
+
+    // 话术框自适应高度，避免长文案被截一半
+    var ta = document.getElementById("card");
+    ta.setAttribute("data-empty", data.rows.length ? "0" : "1");
+    if(ta.style) {
+      ta.style.height = "auto";
+      if(ta.scrollHeight) ta.style.height = Math.max(data.rows.length ? 300 : 150, ta.scrollHeight + 4) + "px";
+    }
+  }
+
+  function buildCard(d){
+    if(d.rows.length === 0) return "";
+    var L = [];
+    L.push("老板你好，我想买这条裤子。麻烦按实测尺寸帮我核对一下，谢谢。");
+    L.push("");
+    L.push("【我的身体围度】");
+    if(num("waist")!==null)  L.push("· 腰围 " + fmt(S.waist) + "cm");
+    if(num("belly")!==null)  L.push("· 腹围 " + fmt(S.belly) + "cm");
+    if(num("hip")!==null)    L.push("· 臀围 " + fmt(S.hip) + "cm");
+    if(num("thigh")!==null)  L.push("· 大腿围 " + fmt(S.thigh) + "cm");
+    if(num("inseam")!==null) L.push("· 内长 " + fmt(S.inseam) + "cm");
+    L.push("");
+    L.push("【我需要的裤子实测尺寸】平铺横量数值 ×2 之后：");
+    d.rows.forEach(function(row){
+      L.push("· " + row.k.replace(/（.*?）/,"") + "：" + fmt(row.lo) + "–" + fmt(row.hi) + "cm");
+    });
+    L.push("");
+    L.push("麻烦你直接回我这几个数，不用回「能穿」或者「拍XXL就行」：");
+    L.push("1）这条裤子平铺实测的腰围、臀围、大腿围各是多少？");
+    L.push("2）后裆长（后腰中点到裆缝十字）实测多少？这项不够我就不买了。");
+    L.push("3）面料有没有弹力？弹力大概几个点？");
+    L.push("4）如果这条尺寸不够，店里有没有同款加肥加大的版？");
+    L.push("");
+    L.push("另外请确认支持七天无理由退换，谢谢。");
+    return L.join("\n");
+  }
+
+  // ---------- 状态持久化 ----------
+  function applySegUI(){
+    var map = {"fabricSeg":"fabric", "fitSeg":"fit", "measureSeg":"measureMode", "heightSeg":"height"};
+    Object.keys(map).forEach(function(id){
+      var key = map[id], box = document.getElementById(id);
+      if(!box) return;
+      box.querySelectorAll("button").forEach(function(b){
+        b.setAttribute("aria-pressed", b.dataset.v === S[key] ? "true" : "false");
+      });
+    });
+  }
+
+  function fillInputs(){
+    document.querySelectorAll("input[data-k]").forEach(function(i){
+      var v = S[i.dataset.k];
+      i.value = (typeof v === "number" && isFinite(v)) ? v : "";
+    });
+  }
+
+  function load(){
+    try{
+      var raw = localStorage.getItem("pants-fit-v1");
+      if(!raw) return;
+      var o = JSON.parse(raw);
+      Object.keys(DEFAULTS).forEach(function(k){
+        if(o[k]) S[k] = o[k];
+      });
+      ["waist","belly","hip","thigh","knee","inseam","rise",
+       "gWaist","gHip","gThigh","gRiseF","gRiseB","gLength"].forEach(function(k){
+        if(typeof o[k] === "number" && isFinite(o[k]) && o[k] > 0) S[k] = o[k];
+      });
+    }catch(err){ /* 本地存储不可用时静默跳过 */ }
+  }
+
+  function save(){
+    try{
+      localStorage.setItem("pants-fit-v1", JSON.stringify(S));
+      document.getElementById("copyMsg").textContent = "已存在这台电脑的浏览器里，下次打开自动带出。";
+    }catch(err){
+      document.getElementById("copyMsg").textContent = "保存失败（浏览器禁用了本地存储），数据只在本次打开期间有效。";
+    }
+  }
+
+  // ---------- 事件 ----------
+  function bindInputs(){
+    document.querySelectorAll("input[data-k]").forEach(function(inp){
+      inp.addEventListener("input", function(){
+        var v = parseFloat(inp.value);
+        S[inp.dataset.k] = (isFinite(v) && v > 0) ? v : null;
+        render();
+      });
+    });
+  }
+
+  function bindSeg(id, key){
+    var box = document.getElementById(id);
+    if(!box) return;
+    box.addEventListener("click", function(ev){
+      var b = ev.target.closest("button");
+      if(!b || !b.dataset.v) return;
+      S[key] = b.dataset.v;
+      applySegUI();
+      render();
+    });
+  }
+
+  document.getElementById("copyCard").addEventListener("click", function(){
+    var t = document.getElementById("card");
+    var msg = document.getElementById("copyMsg");
+    if(!t.value){ msg.textContent = "还没有内容可复制。"; return; }
+    t.removeAttribute("readonly");
+    t.select();
+    t.setSelectionRange(0, t.value.length);
+    var ok = false;
+    try { ok = document.execCommand("copy"); } catch(err){ ok = false; }
+    t.setAttribute("readonly","readonly");
+    if(ok){
+      msg.textContent = "已复制，去粘贴给客服吧。";
+      return;
+    }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(t.value).then(function(){
+        msg.textContent = "已复制，去粘贴给客服吧。";
+      }).catch(function(){
+        msg.textContent = "复制失败，请手动选中上面的文字。";
+      });
+    } else {
+      msg.textContent = "复制失败，请手动选中上面的文字。";
+    }
+  });
+
+  document.getElementById("saveBtn").addEventListener("click", save);
+
+  document.getElementById("resetBtn").addEventListener("click", function(){
+    ["waist","belly","hip","thigh","knee","inseam","rise",
+     "gWaist","gHip","gThigh","gRiseF","gRiseB","gLength"].forEach(function(k){ S[k] = null; });
+    S.fabric = DEFAULTS.fabric; S.fit = DEFAULTS.fit;
+    S.measureMode = DEFAULTS.measureMode; S.height = DEFAULTS.height;
+    fillInputs(); applySegUI();
+    try{ localStorage.removeItem("pants-fit-v1"); }catch(err){}
+    document.getElementById("copyMsg").textContent = "";
+    render();
+  });
+
+  // ---------- 启动 ----------
+  load();
+  fillInputs();
+  applySegUI();
+  bindInputs();
+  bindSeg("fabricSeg","fabric");
+  bindSeg("fitSeg","fit");
+  bindSeg("measureSeg","measureMode");
+  bindSeg("heightSeg","height");
+  render();
+})();
+</script>
+</body>
+</html>
