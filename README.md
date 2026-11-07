@@ -1,4 +1,4 @@
-# 尺码助手
+﻿# 尺码助手
 
 > 不看 S/M/L，只看围度。一次录全身体数据，以后每家店都拿它去核对。
 
@@ -116,7 +116,8 @@ npx serve public -l 4173
 
 ### 手机上使用
 
-见 [docs/phone.md](docs/phone.md)。**不需要打包 APK**——
+站点里有一页 **help.html（手机怎么用）**，配了 iPhone / Android 的分步说明和截图，
+首页顶部就能点进去。文字版见 [docs/phone.md](docs/phone.md)。**不需要打包 APK**——
 部署到 HTTPS 后，手机浏览器「添加到主屏幕」即可，表现和 App 一样，还能离线用。
 
 ### 隐私
