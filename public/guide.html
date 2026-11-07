@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f6f4a">
+<title>筛店清单 · 大码尺码助手</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="css/app.css">
+<style>
+  .item{
+    display:flex;gap:10px;align-items:flex-start;
+    padding:11px 10px;border-radius:11px;border:1px solid transparent;
+    margin-bottom:2px;cursor:pointer;min-height:52px;
+  }
+  .item:hover{background:#faf9f6}
+  .item.on{background:#f3f6f4;border-color:#d3e2d8}
+  .item .box{
+    flex:0 0 22px;width:22px;height:22px;margin-top:1px;
+    border:1.5px solid #c9c5ba;border-radius:6px;background:#fff;position:relative;
+  }
+  .item.on .box{background:var(--brand);border-color:var(--brand)}
+  .item.on .box::after{
+    content:"";position:absolute;left:5px;top:1px;width:8px;height:13px;
+    border:solid #fff;border-width:0 2.5px 2.5px 0;transform:rotate(40deg);
+  }
+  .item .body{flex:1;min-width:0}
+  .item .t{display:block;font-size:14px;font-weight:600}
+  .item .t em{
+    display:inline-block;font-style:normal;font-size:10px;font-weight:400;
+    color:#fff;background:var(--warn);border-radius:4px;padding:0 5px;
+    margin-left:6px;vertical-align:1px;
+  }
+  .item .d{display:block;font-size:11.5px;color:var(--sub);line-height:1.5}
+  .item .pts{flex:0 0 auto;font-size:11px;color:var(--faint);font-family:var(--mono);margin-top:3px}
+
+  .meter{height:9px;border-radius:6px;background:#ece9e1;overflow:hidden;margin:12px 0 4px}
+  .meter i{display:block;height:100%;width:0;background:var(--brand);transition:width .2s}
+  .scoreline{display:flex;justify-content:space-between;font-size:12px;color:var(--sub);font-family:var(--mono)}
+
+  .verdict{border-radius:11px;padding:13px 15px;margin-top:14px}
+  .verdict h3{margin:0 0 5px;font-size:15px}
+  .verdict p{margin:0;font-size:13px}
+  .v-good{background:var(--brand-bg);border:1px solid var(--brand-line)}
+  .v-good h3{color:var(--brand)}
+  .v-mid{background:var(--mid-bg);border:1px solid var(--mid-line)}
+  .v-mid h3{color:var(--mid)}
+  .v-bad{background:var(--warn-bg);border:1px solid var(--warn-line)}
+  .v-bad h3{color:var(--warn)}
+
+  .kv{display:flex;justify-content:space-between;gap:12px;padding:9px 0;
+    border-bottom:1px solid var(--line-soft);font-size:13.5px}
+  .kv:last-of-type{border-bottom:0}
+  .kv b{font-family:var(--mono);font-size:15px;text-align:right}
+  .kv .big{font-size:21px}
+  .ok{color:var(--brand)}
+  .no{color:var(--warn)}
+  .row2{display:grid;grid-template-columns:1fr 112px 26px;gap:7px;align-items:center;margin-bottom:9px}
+  .row2 label{font-size:13px}
+  .row2 label small{display:block;color:var(--sub);font-size:11px;line-height:1.4}
+  .row2 input{width:100%;min-height:var(--tap);padding:9px 10px;border:1px solid var(--line);
+    border-radius:var(--r-sm);font-family:var(--mono);font-size:16px;background:#fdfdfb;text-align:right}
+  .row2 .unit{font-size:11.5px;color:var(--sub);text-align:center}
+  table.kw{width:100%;border-collapse:collapse;font-size:13px}
+  table.kw th{text-align:left;font-weight:400;color:var(--sub);font-size:11px;
+    padding:0 0 6px;border-bottom:1px solid var(--line)}
+  table.kw td{padding:9px 5px 9px 0;border-bottom:1px solid var(--line-soft);vertical-align:top}
+  code{background:#efeee9;border-radius:4px;padding:1px 5px;font-family:var(--mono);font-size:12px;
+    display:inline-block;margin:1px 0}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <h1>筛店清单</h1>
+    <p class="lede">大码这行没有可信的口碑机制——用户少、样本小、刷单多。所以别查"听没听过这个牌子"，
+      查这 9 条。标「关键」的三条缺一条，就别建立长期关系。</p>
+  </div>
+
+  <div class="cols">
+
+    <!-- 左：清单 -->
+    <div>
+      <div class="card">
+        <h2>① 这家店能长期买吗 <span class="tag">点选已满足的项</span></h2>
+        <p class="hint">判断结果会自动保存，下次打开还在。</p>
+
+        <div id="items"></div>
+
+        <div class="meter"><i id="meterBar"></i></div>
+        <div class="scoreline"><span id="scoreTxt">0 / 12 分</span><span id="keyTxt">关键项 0 / 3</span></div>
+        <div id="verdict" class="verdict v-bad">
+          <h3>先别下大单</h3>
+          <p>把上面 9 条过一遍，再决定用不用这家。</p>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <h2>② 搜索词怎么写 <span class="tag">别用码数当关键词</span></h2>
+        <p class="hint">搜"XXXL"等于把尺码定义权交给对方。搜<strong>品类 + 特体词</strong>，
+          才会出来真正做这行的店。</p>
+        <table class="kw">
+          <thead><tr><th>品类</th><th>直接复制去搜</th></tr></thead>
+          <tbody>
+            <tr><td>男装裤子</td><td><code>男 大码 特体 加肥加大 休闲裤 阔腿</code></td></tr>
+            <tr><td>男装上衣</td><td><code>男 加肥加大 特体 衬衫 免烫 宽松</code></td></tr>
+            <tr><td>男装外套</td><td><code>男 大码 加肥 夹克 宽松 外贸</code></td></tr>
+            <tr><td>女装裤子</td><td><code>大码女装 胖mm 阔腿裤 加肥加大 高腰</code></td></tr>
+            <tr><td>女装上衣</td><td><code>大码女装 胖mm 上衣 宽松 遮肚 特体</code></td></tr>
+            <tr><td>男女通用</td><td><code>外贸大码 尾单 原单 特体 加肥加大</code></td></tr>
+          </tbody>
+        </table>
+        <p class="hint" style="margin-top:10px;margin-bottom:0">
+          搜完先按「销量」看同款有没有卖过多个季度；进店先翻「问大家」，
+          那里比评价区真实得多。
+        </p>
+      </div>
+    </div>
+
+    <!-- 右：海淘 -->
+    <div class="sticky-out">
+      <div class="card">
+        <h2>③ 海淘值不值 <span class="tag">把试错成本算成钱</span></h2>
+        <p class="hint">海淘大码真实的问题不是贵，是<b>退一次货可能比衣服还贵</b>。
+          这里算的是"最后真正穿上身的那一件，相当于花了多少钱"。</p>
+
+        <div class="row2">
+          <label for="price">衣服价格<small>含税到手前</small></label>
+          <input type="number" id="price" value="400" inputmode="decimal" step="10">
+          <span class="unit">元</span>
+        </div>
+        <div class="row2">
+          <label for="ship">国际运费 + 税费<small>转运或直邮</small></label>
+          <input type="number" id="ship" value="120" inputmode="decimal" step="10">
+          <span class="unit">元</span>
+        </div>
+        <div class="row2">
+          <label for="returnCost">退货运费<small>寄回美国/欧洲，80–300</small></label>
+          <input type="number" id="returnCost" value="150" inputmode="decimal" step="10">
+          <span class="unit">元</span>
+        </div>
+
+        <div class="seg" id="fitSeg" role="group" aria-label="能穿上的把握" style="margin:4px 0 12px">
+          <button data-v="0.9" aria-pressed="false">很有把握<small>知道同牌尺码</small></button>
+          <button data-v="0.7" aria-pressed="true">大概<small>有平铺数据</small></button>
+          <button data-v="0.45" aria-pressed="false">赌一把<small>只有模特图</small></button>
+        </div>
+
+        <div class="kv"><span>成功穿上的概率</span><b id="pOut">70%</b></div>
+        <div class="kv"><span>退一次的平均损失</span><b id="lossOut">45 元</b></div>
+        <div class="kv"><span>算上试错，单件真实成本</span><b class="big ok" id="trueOut">807 元</b></div>
+        <div id="advice"></div>
+
+        <details>
+          <summary>这个数怎么来的</summary>
+          <p>单件真实成本 =（价格 + 运费 + 退货运费 × 失败率）÷ 成功率。</p>
+          <p>意思是：你每买到一件能穿的，背后都摊上了若干次退货的运费。海淘退货运费高，
+            所以只要成功率不到七八成，真实成本就会翻倍——这时候同样的钱在淘宝买三件试，反而更便宜。</p>
+        </details>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <h2>④ 三条渠道常识 <span class="tag">不用背品牌</span></h2>
+        <div class="kv"><span>欧美码 vs 中国码</span><b>同标号大 1–2 码</b></div>
+        <div class="kv"><span>美码 5XL 的胸围</span><b>≈ 150–160cm</b></div>
+        <div class="kv"><span>海淘退货窗口</span><b>通常 14–30 天</b></div>
+        <p class="hint" style="margin-top:10px;margin-bottom:0">
+          所以：<b>只比围度，不比码数。</b>下单前先确认"能不能只退不退运费"、
+          以及转运仓有没有退货服务——没有的话，退货运费会极其难看。
+        </p>
+        <div class="note-box warn">
+          <b>最容易踩的坑：</b>转运公司大多不帮你退货。要么选支持直邮退货的店，
+          要么先用转运仓的"境内退货"服务，否则那件不合身的衣服只能烂在手里。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-note">
+    <b>把这套跑顺的完整流程</b>
+    <ol>
+      <li>先用<a href="profile.html">尺码档案</a>量出固定数字，导出一次备份。</li>
+      <li>搜「品类 + 特体词」，进店先看有没有平铺尺寸表——没有的直接关掉。</li>
+      <li>用上面 9 条给这家店打分。<b>9 分以上且三条关键项全中</b>，才开始试单。</li>
+      <li>第一次只买 1 件、带运费险。合身就把这家存下来，问老板有没有老客群，
+        以后直接报数字复购——这才是省时间的核心。</li>
+      <li>海淘只用在下单前算过：成功率不到 7 成，或没有境内退货渠道，就别赌。</li>
+    </ol>
+  </div>
+
+</div>
+
+<script src="js/vendor-lz-string.min.js"></script>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+(function () {
+  "use strict";
+  var D = DachuData;
+  var UIx = UI;
+
+  var ITEMS = [
+    { id: "flat", key: true, pts: 2, t: "详情页有平铺实测尺寸",
+      d: "给的是平铺宽度/围度，不是「建议120-150斤」。尤其裤子的后裆和大腿围。" },
+    { id: "self", key: true, pts: 2, t: "支持按你的围度定做",
+      d: "这是唯一能绕过「没你的码」的办法。哪怕贵一点，也说明店家真的在做这行。" },
+    { id: "after", key: true, pts: 2, t: "售后写得清楚（含退换规则）",
+      d: "详情页明写运费险、七天无理由、不合适怎么办。含糊其辞的店，退货时一定扯皮。" },
+    { id: "photo", pts: 1, t: "有自己拍的实拍图或工厂图",
+      d: "不是全网盗图、不是纯模特图。盗图的店连货都不是自己的。" },
+    { id: "season", pts: 1, t: "同款卖过好几个季度",
+      d: "能长期卖同一版型，说明版型和供应链稳定，不是打一枪换一个地方。" },
+    { id: "qa", pts: 1, t: "「问大家」里有真实体型反馈",
+      d: "比评价区真实得多。重点看和你体重接近的人怎么说。" },
+    { id: "fast", pts: 1, t: "客服能当场报出具体数字",
+      d: "你问后裆多少，他能回一个数，而不是「亲亲能穿的」。" },
+    { id: "custom", pts: 1, t: "有加肥加大专版/定制版",
+      d: "不是把普通版放大，而是单独开的版。差别很大。" },
+    { id: "friend", pts: 1, t: "有老客群 / 复购机制",
+      d: "说明有一批人反复买。这是最硬的口碑证据，比任何测评都可靠。" }
+  ];
+  var MAX = ITEMS.reduce(function (a, b) { return a + b.pts; }, 0);
+
+  var box = document.getElementById("items");
+  ITEMS.forEach(function (it) {
+    var div = document.createElement("div");
+    div.className = "item";
+    div.dataset.id = it.id;
+    div.setAttribute("role", "checkbox");
+    div.setAttribute("tabindex", "0");
+    div.innerHTML =
+      '<span class="box"></span>' +
+      '<span class="body"><span class="t">' + it.t + (it.key ? '<em>关键</em>' : '') + '</span>' +
+      '<span class="d">' + it.d + '</span></span>' +
+      '<span class="pts">' + it.pts + '</span>';
+    box.appendChild(div);
+  });
+
+  function itemOf(target) {
+    var n = target;
+    while (n && n !== box) {
+      if (n.classList && n.classList.contains("item")) return n;
+      n = n.parentNode;
+    }
+    return null;
+  }
+
+  function paint() {
+    var g = D.read().guide || {};
+    ITEMS.forEach(function (it) {
+      var el = box.querySelector('.item[data-id="' + it.id + '"]');
+      var on = !!g[it.id];
+      el.classList.toggle("on", on);
+      el.setAttribute("aria-checked", on ? "true" : "false");
+    });
+    score();
+  }
+
+  box.addEventListener("click", function (ev) {
+    var el = itemOf(ev.target);
+    if (!el) return;
+    var id = el.dataset.id;
+    var on = !el.classList.contains("on");
+    D.setGuide(id, on);
+    paint();
+  });
+  box.addEventListener("keydown", function (ev) {
+    if (ev.key !== " " && ev.key !== "Enter") return;
+    var el = itemOf(ev.target);
+    if (!el) return;
+    ev.preventDefault();
+    D.setGuide(el.dataset.id, !el.classList.contains("on"));
+    paint();
+  });
+
+  function score() {
+    var g = D.read().guide || {};
+    var s = 0, keyHit = 0, keyTotal = 0;
+    ITEMS.forEach(function (it) {
+      if (it.key) keyTotal++;
+      if (g[it.id]) {
+        s += it.pts;
+        if (it.key) keyHit++;
+      }
+    });
+
+    var pct = Math.round(s / MAX * 100);
+    var bar = document.getElementById("meterBar");
+    bar.style.width = pct + "%";
+    bar.style.background = (keyHit === keyTotal && s >= 9) ? "var(--brand)"
+      : (s >= 7 ? "var(--mid)" : "var(--warn)");
+
+    document.getElementById("scoreTxt").textContent = s + " / " + MAX + " 分";
+    document.getElementById("keyTxt").textContent = "关键项 " + keyHit + " / " + keyTotal;
+
+    var v = document.getElementById("verdict");
+    if (keyHit === keyTotal && s >= 9) {
+      v.className = "verdict v-good";
+      v.innerHTML = "<h3>可以建立长期关系</h3><p>先把这家存下来（店名、微信、" +
+        "你上次买的型号和尺码）。以后复购直接报数字，不用重新赌。</p>";
+    } else if (keyHit === keyTotal && s >= 7) {
+      v.className = "verdict v-mid";
+      v.innerHTML = "<h3>值得试单，但先别囤</h3><p>关键项都齐了，说明这家在做正事。" +
+        "先买 1 件带运费险，合身了再把它升级成固定店。</p>";
+    } else if (s >= 7 && keyHit < keyTotal) {
+      v.className = "verdict v-mid";
+      v.innerHTML = "<h3>有亮点，但缺关键项</h3><p>分数不低，可关键几条没满足——" +
+        "这类店最容易出现「看着挺专业，买回来还是不合身」。</p>";
+    } else {
+      v.className = "verdict v-bad";
+      v.innerHTML = "<h3>先别下大单</h3><p>这个组合踩雷概率高。要么继续找，" +
+        "要么只用它买一件特别便宜的东西试水，不要一次买两三件。</p>";
+    }
+  }
+
+  // ---------- 海淘 ----------
+  var P = 0.7;
+
+  document.getElementById("fitSeg").addEventListener("click", function (ev) {
+    var b = ev.target.closest("button");
+    if (!b) return;
+    this.querySelectorAll("button").forEach(function (x) {
+      x.setAttribute("aria-pressed", x === b ? "true" : "false");
+    });
+    P = parseFloat(b.dataset.v);
+    calc();
+  });
+
+  function num(id) {
+    var v = parseFloat(document.getElementById(id).value);
+    return isFinite(v) && v >= 0 ? v : 0;
+  }
+  function money(x) { return Math.round(x) + " 元"; }
+
+  function calc() {
+    var price = num("price"), ship = num("ship"), ret = num("returnCost");
+    var loss = (1 - P) * ret;
+    var trueCost = (price + ship + loss) / P;
+
+    document.getElementById("pOut").textContent = Math.round(P * 100) + "%";
+    document.getElementById("lossOut").textContent = money(loss);
+    var t = document.getElementById("trueOut");
+    t.textContent = money(trueCost);
+    t.className = "big " + (P >= 0.7 ? "ok" : "no");
+
+    var adv = document.getElementById("advice");
+    if (P < 0.6) {
+      adv.className = "note-box warn";
+      adv.innerHTML = "<b>别赌。</b>成功率不到六成时，单件真实成本已经被退货吃掉了——" +
+        "同样的钱在国内能买三件带着运费险试。先在国内把尺寸摸准，再来海淘。";
+    } else if (P < 0.75) {
+      adv.className = "note-box warn";
+      adv.innerHTML = "<b>可以试，但只买一件。</b>务必先确认退货运费到底多少、" +
+        "转运仓能不能帮你退，再下单。";
+    } else {
+      adv.className = "note-box ok";
+      adv.textContent = "成功率足够高，海淘在这件衣服上是划算的。注意别一次买多件不同尺码。";
+    }
+  }
+
+  ["price", "ship", "returnCost"].forEach(function (id) {
+    document.getElementById(id).addEventListener("input", calc);
+  });
+
+  // ---------- 启动 ----------
+  UIx.boot();
+  paint();
+  calc();
+
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("sw.js").catch(function () {});
+    });
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f6f4a">
+<meta name="description" content="大码尺码助手：一次录全身体围度，按实测尺寸买衣服，不再靠碰运气。">
+<title>大码尺码助手</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="hero">
+    <h1>大码尺码助手</h1>
+    <p>不看 S/M/L，只看围度。一次录全身体数据，以后每家店都拿它去核对——
+      买之前就能判断穿不穿得下，不用买一堆回来试。</p>
+    <div class="btnrow">
+      <a class="btn brand" href="profile.html">开始量尺寸</a>
+      <a class="btn ghost" href="guide.html">怎么挑店</a>
+    </div>
+  </div>
+
+  <div class="stack" style="margin-bottom:14px">
+    <a class="tile" href="profile.html">
+      <h2>① 身体尺码档案 <span class="state" id="stProfile">还没录</span></h2>
+      <p>21 项围度，支持厘米 / 英寸 / 市寸、公斤 / 斤，自动换算。这是另外两个工具的数据源。</p>
+      <span class="go">录入 →</span>
+    </a>
+
+    <a class="tile" href="pants.html">
+      <h2>② 裤子尺寸换算 <span class="state" id="stPants">还没录</span></h2>
+      <p>算出裤腰围、大腿围、后裆长该找多少。后裆长是"坐下会不会勒"的关键。</p>
+      <span class="go">去换算 →</span>
+    </a>
+
+    <a class="tile" href="guide.html">
+      <h2>③ 筛店清单 <span class="state" id="stGuide">未开始</span></h2>
+      <p>9 条标准判断一家店值不值得长期买；外加海淘真实成本计算器。</p>
+      <span class="go">去筛选 →</span>
+    </a>
+  </div>
+
+  <div class="card">
+    <h2>为什么不用码数买衣服 <span class="tag">两句话讲清</span></h2>
+    <p class="hint" style="margin-bottom:0">
+      同一件"5XL"，不同商家能差出 10cm。<b>码数不是数据，围度才是。</b>
+      而大体重买裤子最容易翻车的不是腰围，是<b>后裆长</b>和<b>大腿围</b>——
+      这两项商家常常不写，所以你得主动去问。这个工具就是帮你把该问的数字算出来。
+    </p>
+  </div>
+
+  <div class="card" style="margin-top:14px">
+    <h2>数据存在哪 <span class="tag">重要</span></h2>
+    <p class="hint" style="margin-bottom:8px">
+      你的尺寸<b>只存在这台设备的浏览器里</b>，不上传任何服务器。好处是隐私，坏处是
+      清缓存、换手机就没了。所以录完记得去「尺码档案 → 数据备份」导出一次。
+    </p>
+    <div class="btnrow" style="margin-top:0">
+      <a class="btn ghost small" href="profile.html#backup">去备份</a>
+      <a class="btn ghost small" href="guide.html">看使用说明</a>
+    </div>
+  </div>
+
+  <div class="footer-note">
+    <b>三步用法</b>
+    <ol>
+      <li>量好 5 项就能开始用：腹围、臀围、大腿围、立裆深、胸围。</li>
+      <li>去裤子页，看「该找什么数」，把那段话复制给客服。</li>
+      <li>商家报不出后裆长和大腿围，就换一家。筛店页有判断标准。</li>
+    </ol>
+  </div>
+
+</div>
+
+<script src="js/vendor-lz-string.min.js"></script>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+(function () {
+  "use strict";
+  UI.boot();
+
+  var D = DachuData;
+
+  function setState(el, has, hasText, noText) {
+    el.textContent = has ? hasText : noText;
+    el.className = "state" + (has ? " has" : "");
+  }
+
+  function refresh() {
+    var d = D.read();
+    var n = Object.keys(d.items).length;
+    setState(document.getElementById("stProfile"), n > 0, "已录 " + n + " 项", "还没录");
+
+    var pantsNeed = ["belly", "thigh", "rise"].filter(function (k) { return D.has(k); }).length;
+    setState(document.getElementById("stPants"), pantsNeed > 0, "可算 " + pantsNeed + "/3 项", "还没录");
+
+    var g = Object.keys(d.guide || {}).length;
+    setState(document.getElementById("stGuide"), g > 0, "已勾 " + g + " 条", "未开始");
+  }
+
+  refresh();
+  window.addEventListener("focus", refresh);
+  document.addEventListener("visibilitychange", function () {
+    if (!document.hidden) refresh();
+  });
+
+  // 离线/PWA 提示
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("sw.js").catch(function () {});
+    });
+  }
+})();
+</script>
+</body>
+</html>

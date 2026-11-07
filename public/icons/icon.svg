@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="大码尺码助手">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2b8a5f"/>
+      <stop offset="1" stop-color="#18563a"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#g)"/>
+  <!-- 软尺：一条折尺，暗示"测量" -->
+  <g fill="none" stroke="#eaf5ee" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M116 340c0-126 96-212 210-212" stroke-width="26"/>
+    <path d="M356 258c0 88-62 158-142 158" stroke-width="26"/>
+  </g>
+  <!-- 刻度 -->
+  <g stroke="#eaf5ee" stroke-width="12" stroke-linecap="round">
+    <path d="M150 268v-26"/>
+    <path d="M206 224v-26"/>
+    <path d="M262 202v-26"/>
+    <path d="M310 202v-26"/>
+    <path d="M318 300v26"/>
+    <path d="M262 348v26"/>
+    <path d="M206 372v26"/>
+  </g>
+  <circle cx="356" cy="258" r="13" fill="#eaf5ee"/>
+  <circle cx="214" cy="416" r="13" fill="#eaf5ee"/>
+</svg>
