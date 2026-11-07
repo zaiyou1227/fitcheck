@@ -25,7 +25,7 @@ powershell -ExecutionPolicy Bypass -File scripts/upload.ps1
 
 1. 打开 <https://github.com/settings/tokens>
 2. 点 **Generate new token (classic)**
-3. Note 随便写（比如 `dachu-upload`），Expiration 选 30 天
+3. Note 随便写（比如 `fitcheck-upload`），Expiration 选 30 天
 4. 勾上 **`repo`** 这一个权限就够了
 5. 生成后复制那串 `ghp_...`，**只显示一次**
 
@@ -41,7 +41,7 @@ powershell -ExecutionPolicy Bypass -File scripts/upload.ps1
 ## 方式二：手动上传（不碰命令行）
 
 1. 打开 <https://github.com/new>
-2. 仓库名填 `dachu-fitcheck`（或你喜欢的），**Public** 或 Private 都行
+2. 仓库名填 `fitcheck`（或你喜欢的），**Public** 或 Private 都行
 3. **不要**勾选 "Add a README"
 4. 创建后，页面上会有 "uploading an existing file" 的链接，把 `public/` 里的文件拖进去
 
@@ -53,14 +53,14 @@ powershell -ExecutionPolicy Bypass -File scripts/upload.ps1
 ## 方式三：手动 git 命令
 
 ```bash
-cd dachu-fitcheck
+cd fitcheck
 
 git init
 git add .
-git commit -m "feat: 大码尺码助手 v1.0.0"
+git commit -m "feat: 尺码助手 v1.0.0"
 
 # 换成你的用户名和仓库名
-git remote add origin https://github.com/<你的用户名>/dachu-fitcheck.git
+git remote add origin https://github.com/<你的用户名>/fitcheck.git
 
 # 推 main
 git branch -M main
@@ -96,7 +96,7 @@ GitHub Pages 的 "root" 指的是**仓库根目录**，而我们的站点在 `pu
 **办法 B：手动建分支**
 
 ```bash
-cd dachu-fitcheck
+cd fitcheck
 git subtree push --prefix public origin gh-pages
 ```
 
@@ -105,7 +105,7 @@ git subtree push --prefix public origin gh-pages
 发布后的地址形如：
 
 ```
-https://<你的用户名>.github.io/dachu-fitcheck/
+https://<你的用户名>.github.io/fitcheck/
 ```
 
 ### 验证

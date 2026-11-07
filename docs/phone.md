@@ -33,7 +33,7 @@ Source 选 **GitHub Actions**。
 等一两分钟，你会得到：
 
 ```
-https://<你的用户名>.github.io/dachu-fitcheck/
+https://<你的用户名>.github.io/fitcheck/
 ```
 
 **必须是 https** —— Service Worker 和「添加到主屏幕」只在 HTTPS 下工作
@@ -65,7 +65,7 @@ https://<你的用户名>.github.io/dachu-fitcheck/
 2. 在电脑上运行：
 
 ```powershell
-cd "大码尺码助手"
+cd "尺码助手"
 powershell -ExecutionPolicy Bypass -File scripts/serve-lan.ps1
 ```
 
@@ -91,7 +91,7 @@ http://192.168.0.60:4173/
 
 ```bash
 npm install @capacitor/core @capacitor/cli @capacitor/android
-npx cap init dachu com.example.dachu --web-dir=public
+npx cap init fitcheck com.example.fitcheck --web-dir=public
 npx cap add android
 npx cap sync
 npx cap open android      # 用 Android Studio 打 APK

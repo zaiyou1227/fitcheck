@@ -20,7 +20,7 @@ function Fail($msg) {
 }
 
 Write-Host ""
-Write-Host "  大码尺码助手 · 一键上传" -ForegroundColor White
+Write-Host "  尺码助手 · 一键上传" -ForegroundColor White
 Write-Host "  ----------------------------------------" -ForegroundColor DarkGray
 
 # ---------- 1. 检查环境 ----------
@@ -38,12 +38,12 @@ Write-Ok "项目文件完整"
 # ---------- 2. 输入信息 ----------
 Write-Step "填写信息"
 
-$defaultName = "dachu-fitcheck"
+$defaultName = "fitcheck"
 $repoName = Read-Host "仓库名（回车用默认：$defaultName）"
 if ([string]::IsNullOrWhiteSpace($repoName)) { $repoName = $defaultName }
 if ($repoName -notmatch '^[A-Za-z0-9._-]+$') { Fail "仓库名只能含字母、数字、点、下划线、连字符" }
 
-$desc = "大码尺码助手：按围度买衣服，不按码数买。纯前端、离线可用。"
+$desc = "尺码助手：按围度买衣服，不按码数买。纯前端、离线可用。"
 
 Write-Host ""
 Write-Host "需要你的 GitHub Token（只勾选 repo 权限就够了）。" -ForegroundColor Gray
@@ -72,7 +72,7 @@ $headers = @{
   "Authorization"        = "Bearer $tokenText"
   "Accept"               = "application/vnd.github+json"
   "X-GitHub-Api-Version" = "2022-11-28"
-  "User-Agent"           = "dachu-upload-script"
+  "User-Agent"           = "fitcheck-upload-script"
 }
 
 try {
@@ -142,7 +142,7 @@ $status = git status --porcelain
 if ([string]::IsNullOrWhiteSpace($status)) {
   Write-Ok "没有新改动"
 } else {
-  git commit -m "feat: 大码尺码助手 v1.0.0" --quiet
+  git commit -m "feat: 尺码助手 v1.0.0" --quiet
   Write-Ok "已提交"
 }
 

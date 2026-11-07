@@ -11,7 +11,7 @@ $PublicDir = Join-Path $Root "public"
 $Port = 4173
 
 Write-Host ""
-Write-Host "  大码尺码助手 · 局域网预览" -ForegroundColor White
+Write-Host "  尺码助手 · 局域网预览" -ForegroundColor White
 Write-Host "  ----------------------------------------" -ForegroundColor DarkGray
 
 if (-not (Test-Path (Join-Path $PublicDir "index.html"))) {

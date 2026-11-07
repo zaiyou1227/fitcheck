@@ -1,8 +1,8 @@
 {
-  "name": "dachu-fitcheck",
+  "name": "fitcheck",
   "version": "1.0.0",
   "private": true,
-  "description": "大码尺码助手：按围度买衣服，不按码数买。",
+  "description": "尺码助手：按围度买衣服，不按码数买。",
   "scripts": {
     "serve": "npx --yes serve public -l 4173",
     "test": "node tests/run-tests.cjs"
