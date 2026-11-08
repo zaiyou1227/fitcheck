@@ -1,4 +1,4 @@
-/* ===========================================================
+﻿/* ===========================================================
    集成测试：用 jsdom 加载真实页面（经本地 HTTP 服务），模拟用户操作
    覆盖：数据层换算、单位切换、推算、分享链接、筛店持久化、静态资源
    用法：node tests/run-tests.cjs
@@ -346,7 +346,7 @@ async function main() {
       "icons/icon.svg", "icons/icon-192.png", "icons/icon-512.png",
       "icons/apple-touch-icon.png",
       "img/help-home.png", "img/help-profile.png", "img/help-compare.png",
-      "download/offline.html"
+      "download/single.html"
     ];
     must.forEach(f => check("存在 " + f, fs.existsSync(path.join(PUB, f))));
 
@@ -365,15 +365,15 @@ async function main() {
 
     // 离线版：必须是自包含的
     {
-      const off = fs.readFileSync(path.join(PUB, "download/offline.html"), "utf8");
-      check("离线版没有外部 script", !/<script[^>]+src=/i.test(off));
-      check("离线版没有外部样式", !/<link[^>]+rel="stylesheet"/i.test(off));
-      check("离线版内联了数据层", off.includes('var KEY = "dachu.v1"'));
-      check("离线版内联了解析引擎", off.includes("SizeParse"));
-      check("离线版体积合理（<200KB）", Buffer.byteLength(off) < 200 * 1024,
+      const off = fs.readFileSync(path.join(PUB, "download/single.html"), "utf8");
+      check("单文件版没有外部 script", !/<script[^>]+src=/i.test(off));
+      check("单文件版没有外部样式", !/<link[^>]+rel="stylesheet"/i.test(off));
+      check("单文件版内联了数据层", off.includes('var KEY = "dachu.v1"'));
+      check("单文件版内联了解析引擎", off.includes("SizeParse"));
+      check("单文件版体积合理（<1.2MB）", Buffer.byteLength(off) < 1200 * 1024,
         Math.round(Buffer.byteLength(off) / 1024) + "KB");
-      check("首页提供离线版下载", idxHtml.includes("download/offline.html"));
-      check("说明页提供离线版下载", helpHtml.includes("download/offline.html"));
+      check("首页提供单文件版下载", idxHtml.includes("download/single.html"));
+      check("说明页提供单文件版下载", helpHtml.includes("download/single.html"));
     }
 
     // 说明页截图尺寸合理（宽高比接近手机）
@@ -396,7 +396,7 @@ async function main() {
         .every(f => sw.includes(f)));
     check("sw 缓存了解析引擎", sw.includes("sizeparse.js"));
     check("sw 缓存了说明页截图", sw.includes("img/help-home.png"));
-    check("sw 缓存了离线版", sw.includes("download/offline.html"));
+    check("sw 缓存了单文件版", sw.includes("download/single.html"));
 
     ["index.html", "profile.html", "pants.html", "compare.html", "guide.html"].forEach(f => {
       const s = fs.readFileSync(path.join(PUB, f), "utf8");

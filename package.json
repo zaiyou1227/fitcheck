@@ -1,12 +1,12 @@
-{
+﻿{
   "name": "fitcheck",
   "version": "1.1.0",
   "private": true,
   "description": "尺码助手：按围度买衣服，不按码数买。",
   "scripts": {
     "serve": "npx --yes serve public -l 4173",
-    "offline": "node scripts/build-offline.cjs",
-    "test": "node tests/run-tests.cjs && node tests/test-offline.cjs && node tests/test-sizeparse.cjs && node tests/test-compare.cjs"
+    "single": "node scripts/build-single.cjs",
+    "test": "node tests/run-tests.cjs && node tests/test-single.cjs && node tests/test-sizeparse.cjs && node tests/test-compare.cjs"
   },
   "devDependencies": {
     "jsdom": "^31.0.0",
