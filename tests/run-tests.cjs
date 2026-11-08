@@ -345,7 +345,8 @@ async function main() {
       "manifest.webmanifest", "sw.js",
       "icons/icon.svg", "icons/icon-192.png", "icons/icon-512.png",
       "icons/apple-touch-icon.png",
-      "img/help-home.png", "img/help-profile.png", "img/help-compare.png"
+      "img/help-home.png", "img/help-profile.png", "img/help-compare.png",
+      "download/offline.html"
     ];
     must.forEach(f => check("存在 " + f, fs.existsSync(path.join(PUB, f))));
 
@@ -361,6 +362,19 @@ async function main() {
     // 首页要有说明页入口
     const idxHtml = fs.readFileSync(path.join(PUB, "index.html"), "utf8");
     check("首页链接到说明页", idxHtml.includes('href="help.html"'));
+
+    // 离线版：必须是自包含的
+    {
+      const off = fs.readFileSync(path.join(PUB, "download/offline.html"), "utf8");
+      check("离线版没有外部 script", !/<script[^>]+src=/i.test(off));
+      check("离线版没有外部样式", !/<link[^>]+rel="stylesheet"/i.test(off));
+      check("离线版内联了数据层", off.includes('var KEY = "dachu.v1"'));
+      check("离线版内联了解析引擎", off.includes("SizeParse"));
+      check("离线版体积合理（<200KB）", Buffer.byteLength(off) < 200 * 1024,
+        Math.round(Buffer.byteLength(off) / 1024) + "KB");
+      check("首页提供离线版下载", idxHtml.includes("download/offline.html"));
+      check("说明页提供离线版下载", helpHtml.includes("download/offline.html"));
+    }
 
     // 说明页截图尺寸合理（宽高比接近手机）
     {
@@ -382,6 +396,7 @@ async function main() {
         .every(f => sw.includes(f)));
     check("sw 缓存了解析引擎", sw.includes("sizeparse.js"));
     check("sw 缓存了说明页截图", sw.includes("img/help-home.png"));
+    check("sw 缓存了离线版", sw.includes("download/offline.html"));
 
     ["index.html", "profile.html", "pants.html", "compare.html", "guide.html"].forEach(f => {
       const s = fs.readFileSync(path.join(PUB, f), "utf8");

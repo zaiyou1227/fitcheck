@@ -174,6 +174,36 @@
     </div>
   </div>
 
+  <!-- 打不开怎么办 -->
+  <div class="card" style="margin-top:14px;border-color:var(--warn-line)">
+    <h2>网站在手机上打不开？ <span class="tag">国内常见</span></h2>
+    <p class="hint" style="margin-bottom:10px">
+      GitHub 的域名在国内部分网络下会被限制，尤其是移动数据网络。如果你打开是
+      <b>一直转圈 / 空白 / 报错</b>，不是你操作错了，是网络到不了。
+    </p>
+    <p class="hint" style="margin-bottom:10px">
+      有两个办法，都**不需要**访问 GitHub：
+    </p>
+
+    <div class="note-box ok" style="margin-top:0">
+      <b>办法一：下载离线版（推荐）</b><br>
+      整个工具打包成一个 60KB 的 HTML 文件，<b>完全离线，不联网也能用</b>。
+      下载后用微信「文件传输助手」发到手机，用浏览器打开即可。
+      <div class="btnrow" style="margin-top:10px">
+        <a class="btn brand small" href="download/offline.html" download="尺码助手-离线版.html">
+          下载离线版（60KB）
+        </a>
+      </div>
+    </div>
+
+    <div class="note-box mid">
+      <b>办法二：用电脑开局域网</b><br>
+      手机和电脑连同一个 Wi-Fi，在电脑上运行仓库里的
+      <code>scripts/serve-lan.ps1</code>，会打印一个 <code>http://192.168.x.x:4173</code> 的地址，
+      手机浏览器打开就行。不需要外网。
+    </div>
+  </div>
+
   <!-- iPhone -->
   <div class="card" style="margin-top:14px">
     <h2>iPhone 怎么加到桌面 <span class="tag">Safari 浏览器</span></h2>

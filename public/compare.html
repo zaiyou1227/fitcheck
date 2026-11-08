@@ -93,7 +93,7 @@
         <div class="pane" id="pane-html">
           <p class="hint">把商品详情页的<b>尺寸表整段复制</b>黏进来（Ctrl+A 全选页面也行），或者直接手打。
             多个商品之间用一行 <code>---</code> 分隔。</p>
-          <textarea class="big" id="htmlInput" placeholder="尺码	裤长	腰围	臀围	大腿围	后裆&#10;3XL	102	116	126	72	36&#10;4XL	104	124	134	78	38&#10;---&#10;尺码	胸围	肩宽	衣长&#10;XL	116	48	72"></textarea>
+          <textarea class="big" id="htmlInput" placeholder="尺码	裤长	腰围	臀围	大腿围	后裆&#10;S	98	72	94	56	32&#10;M	100	76	98	58	33&#10;L	102	80	102	60	34&#10;XL	104	86	107	63	35&#10;---&#10;尺码	胸围	肩宽	衣长&#10;S	104	44	68&#10;M	110	46	70"></textarea>
           <div class="toolbar">
             <button class="btn brand" id="parseBtn">解析并比对</button>
             <button class="btn ghost" id="clearHtml">清空</button>
@@ -393,7 +393,7 @@
       window.postMessage({
         type: "DACHU_TABLE",
         title: "（测试）某品牌长裤",
-        text: "尺码\t裤长\t腰围\t臀围\t大腿围\t后裆\n3XL\t102\t116\t126\t72\t36\n4XL\t104\t124\t134\t78\t38\n5XL\t106\t132\t142\t84\t40",
+        text: "尺码\t裤长\t腰围\t臀围\t大腿围\t后裆\nS\t98\t72\t94\t56\t32\nM\t100\t76\t98\t58\t33\nL\t102\t80\t102\t60\t34\nXL\t104\t86\t107\t63\t35",
         url: location.href
       }, "*");
     });
